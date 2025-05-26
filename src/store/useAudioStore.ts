@@ -6,6 +6,6 @@ interface AudioState {
 }
 
 export const useAudioStore = create<AudioState>((set) => ({
-  volume: 0.3,
+  volume: 0.1,
   setVolume: (volume) => set({ volume }),
 }));

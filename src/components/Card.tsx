@@ -10,6 +10,7 @@ interface CardProps {
   attack: number;
   life: number;
   cost: number;
+  isNew?: boolean;
 }
 
 export const Card = ({
@@ -19,10 +20,12 @@ export const Card = ({
   attack,
   life,
   cost,
+  isNew = false,
 }: CardProps) => {
   const [isFlipped, setIsFlipped] = useState(true);
   const [isShowingFrontPart, setIsShowingFrontPart] = useState(true);
   const [isShowingCardInfo, setIsShowingCardInfo] = useState(true);
+  const [hasAnimated, setHasAnimated] = useState(!isNew);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { setExpandedCard } = useCardStore();
   const { volume } = useAudioStore();
@@ -31,13 +34,20 @@ export const Card = ({
     audioRef.current = new Audio(flipSound);
     audioRef.current.volume = volume;
 
+    if (isNew && !hasAnimated) {
+      const timer = setTimeout(() => {
+        setHasAnimated(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
     };
-  }, [volume]);
+  }, [volume, isNew, hasAnimated]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -71,10 +81,14 @@ export const Card = ({
     setIsFlipped(true);
   };
 
+  const animationClass = isNew && !hasAnimated
+    ? "animate-draw"
+    : "";
+
   return (
     <>
       <div
-        className="relative w-64 h-96 cursor-pointer perspective-1000 mt-[60px]"
+        className={`relative w-64 h-96 cursor-pointer perspective-1000 ${animationClass}`}
         onMouseEnter={() => setIsFlipped(false)}
         onMouseLeave={() => setIsFlipped(true)}
         onContextMenu={handleContextMenu}
@@ -123,6 +137,7 @@ export const Card = ({
             </span>
           </div>
         </div>
+
         <div
           className={`absolute bottom-5 right-2 transition-all duration-300 ${
             isShowingCardInfo ? "opacity-100" : "opacity-0"
@@ -137,6 +152,7 @@ export const Card = ({
             </span>
           </div>
         </div>
+
         <div
           className={`absolute top-0 right-2 transition-all duration-300 ${
             isShowingCardInfo ? "opacity-100" : "opacity-0"
@@ -152,6 +168,25 @@ export const Card = ({
           </div>
         </div>
       </div>
+      <style>{`
+        @keyframes draw {
+          0% {
+            transform: translate(0, -100px);
+            opacity: 0;
+          }
+          50% {
+            transform: translate(0, -50px);
+            opacity: 0.5;
+          }
+          100% {
+            transform: translate(0, 0);
+            opacity: 1;
+          }
+        }
+        .animate-draw {
+          animation: draw 0.5s ease-out forwards;
+        }
+      `}</style>
     </>
   );
 };

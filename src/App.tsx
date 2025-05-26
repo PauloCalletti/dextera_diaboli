@@ -2,18 +2,22 @@ import "./App.css";
 import { Deck } from "./components/Deck";
 import { ExpandedCard } from "./components/ExpandedCard";
 import { VolumeController } from "./components/VolumeController";
-import { mockDecks } from "./mocks/decks";
+import { Pile } from "./components/Pile";
+import { mockCards } from "./mocks/cards";
 import { useCardStore } from "./store/useCardStore";
 import { useAudioStore } from "./store/useAudioStore";
+import { usePileStore } from "./store/usePileStore";
 import { useEffect, useRef } from "react";
 import themeSound from "./assets/audio/theme.mp3";
+import { Essence } from "./components/Essence";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
   const { volume } = useAudioStore();
+  const { playerHand } = usePileStore();
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const filteredExpandedCard = mockDecks.lutadores.find(
+  const filteredExpandedCard = mockCards.find(
     (card) => card.id === expandedCard
   );
 
@@ -41,7 +45,10 @@ function App() {
 
   return (
     <div>
-      <Deck cards={mockDecks.lutadores} verticalPosition="bottom" />
+      <Essence />
+      <Pile />
+      <Deck cards={playerHand} verticalPosition="bottom" />
+      
       {expandedCard && (
         <ExpandedCard
           frontCardImage={filteredExpandedCard?.frontCardImage}
@@ -53,6 +60,7 @@ function App() {
           }}
         />
       )}
+      
       <VolumeController />
     </div>
   );
