@@ -1,5 +1,6 @@
 import { Card } from "./Card";
 import { useMemo, useState } from "react";
+import { FlipButton } from "./FlipButton";
 
 interface DeckProps {
   cards: Array<{
@@ -16,14 +17,12 @@ interface DeckProps {
 
 export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [flipAllCards, setFlipAllCards] = useState(false);
 
   // Calculate card scale based on number of cards
   const cardScale = useMemo(() => {
-    if (cards.length <= 5) return 1;
-    if (cards.length <= 8) return 0.85;
-    if (cards.length <= 12) return 0.7;
-    return 0.6;
-  }, [cards.length]);
+    return 0.65; // Always use small scale
+  }, []);
 
   // Calculate the spacing between cards based on available width
   const cardSpacing = useMemo(() => {
@@ -34,7 +33,7 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
     const minSpacing = scaledCardWidth * 0.15; // Minimum 15% of card width visible
 
     // Calculate how much space we need vs how much we have
-    const totalMinWidth = scaledCardWidth + (minSpacing * (cards.length - 1));
+    const totalMinWidth = scaledCardWidth + minSpacing * (cards.length - 1);
     const availableWidth = Math.min(maxWidth, screenWidth - 40); // Leave 20px padding on each side
 
     if (totalMinWidth <= availableWidth) {
@@ -47,24 +46,30 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
     }
   }, [cardScale, cards.length]);
 
+  const handleFlipAllCards = () => {
+    setFlipAllCards(!flipAllCards);
+  };
+
   return (
     <div
       className={`fixed w-full ${
         verticalPosition === "top" ? "top-5" : "bottom-5"
       }`}
     >
-      <div className="relative mx-auto" style={{ maxWidth: '90vw' }}>
+      <div className="relative mx-auto" style={{ maxWidth: "90vw" }}>
         <div className="flex justify-center">
-          <div 
+          <div
             className="relative flex items-center hand-container"
             onMouseLeave={() => setHoveredIndex(null)}
           >
             {cards.map((card, cardIndex) => {
               const isHovered = hoveredIndex === cardIndex;
-              const isNearHovered = hoveredIndex !== null && 
+              const isNearHovered =
+                hoveredIndex !== null &&
                 Math.abs(hoveredIndex - cardIndex) <= 1;
 
-              const leftPosition = cardIndex * (256 * cardScale - (256 * cardScale - cardSpacing));
+              const leftPosition =
+                cardIndex * (256 * cardScale - (256 * cardScale - cardSpacing));
 
               return (
                 <div
@@ -73,15 +78,17 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
                   style={{
                     left: `${leftPosition}px`,
                     zIndex: isHovered ? 50 : cardIndex,
-                    transition: 'all 0.3s ease-in-out',
+                    transition: "all 0.3s ease-in-out",
                     transform: `scale(${cardScale}) ${
-                      isHovered 
-                        ? 'translateY(-40px)' 
-                        : isNearHovered 
-                          ? 'translateX(' + (hoveredIndex < cardIndex ? '20px' : '-20px') + ')' 
-                          : ''
+                      isHovered
+                        ? "translateY(-40px)"
+                        : isNearHovered
+                        ? "translateX(" +
+                          (hoveredIndex < cardIndex ? "20px" : "-20px") +
+                          ")"
+                        : ""
                     }`,
-                    transformOrigin: 'bottom center',
+                    transformOrigin: "bottom center",
                   }}
                   onMouseEnter={() => setHoveredIndex(cardIndex)}
                 >
@@ -93,17 +100,13 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
                     life={card.life}
                     cost={card.cost}
                     isNew={card.isNew}
+                    flipped={flipAllCards === false ? undefined : true}
                   />
                 </div>
               );
             })}
           </div>
         </div>
-        {cards.length > 0 && (
-          <div className="absolute -top-8 left-0 bg-white/10 px-3 py-1 rounded-full text-white text-sm">
-            {cards.length} cards in hand
-          </div>
-        )}
       </div>
       <style>{`
         .hand-container {
@@ -113,11 +116,16 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
           display: flex;
           justify-content: center;
           position: relative;
-        }
-        .card-wrapper {
-          position: absolute;
-        }
-      `}</style>
+          }
+          .card-wrapper {
+            position: absolute;
+            }
+            `}</style>
+      {cards.length > 0 && (
+        <div className="absolute bottom-[10px]">
+          <FlipButton onClick={handleFlipAllCards} cardCount={cards.length} />
+        </div>
+      )}
     </div>
   );
 };
