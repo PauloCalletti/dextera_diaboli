@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import flipSound from "../assets/audio/card-flip.mp3";
 import { useCardStore } from "../store/useCardStore";
 import { useAudioStore } from "../store/useAudioStore";
+import { usePileStore } from "../store/usePileStore";
 
 interface CardProps {
   frontCardImage: string;
@@ -11,6 +12,8 @@ interface CardProps {
   life: number;
   cost: number;
   isNew?: boolean;
+  flipped?: boolean;
+  isInArena?: boolean;
 }
 
 export const Card = ({
@@ -21,14 +24,17 @@ export const Card = ({
   life,
   cost,
   isNew = false,
+  flipped = false,
+  isInArena = false,
 }: CardProps) => {
-  const [isFlipped, setIsFlipped] = useState(true);
+  const [isFlipped, setIsFlipped] = useState(flipped);
   const [isShowingFrontPart, setIsShowingFrontPart] = useState(true);
   const [isShowingCardInfo, setIsShowingCardInfo] = useState(true);
   const [hasAnimated, setHasAnimated] = useState(!isNew);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { setExpandedCard } = useCardStore();
   const { volume } = useAudioStore();
+  const { playCardFromHand } = usePileStore();
 
   useEffect(() => {
     audioRef.current = new Audio(flipSound);
@@ -75,23 +81,39 @@ export const Card = ({
     }
   }, [isFlipped]);
 
+  useEffect(() => {
+    if (flipped !== undefined) {
+      setIsFlipped(!flipped);
+    }
+  }, [flipped]);
+
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setExpandedCard(cardId);
-    setIsFlipped(true);
   };
 
-  const animationClass = isNew && !hasAnimated
-    ? "animate-draw"
-    : "";
+  const handleClick = () => {
+    if (!isInArena) {
+      playCardFromHand(cardId);
+    }
+  };
+
+  const animationClass = isNew && !hasAnimated ? "animate-draw" : "";
+
+  const handleFlip = (nextState: boolean) => {
+    if (flipped !== true) {
+      setIsFlipped(nextState);
+    }
+  };
 
   return (
     <>
       <div
         className={`relative w-64 h-96 cursor-pointer perspective-1000 ${animationClass}`}
-        onMouseEnter={() => setIsFlipped(false)}
-        onMouseLeave={() => setIsFlipped(true)}
+        onMouseEnter={() => handleFlip(false)}
+        onMouseLeave={() => handleFlip(true)}
         onContextMenu={handleContextMenu}
+        onClick={handleClick}
       >
         <div
           className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
