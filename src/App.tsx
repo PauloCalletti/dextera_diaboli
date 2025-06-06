@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import themeSound from "./assets/audio/theme.mp3";
 import { Essence } from "./components/Essence";
 import { Arena } from "./components/Arena";
+import DiabolicalLifeCounter from "./components/LifeCounter";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
@@ -97,6 +98,7 @@ function App() {
       <Essence />
       <Pile />
       <Deck cards={playerHand} verticalPosition="bottom" />
+      <DiabolicalLifeCounter />
 
       {expandedCard && (
         <ExpandedCard
