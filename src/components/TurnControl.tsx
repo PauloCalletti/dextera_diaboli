@@ -6,11 +6,13 @@ import { Sword, Play, SkipForward } from "lucide-react"
 import { useBattleStore } from "../store/useBattleStore"
 import { useAudioStore } from "../store/useAudioStore"
 import { useTurnStore } from "../store/useTurnStore"
+import { useEssenceStore } from "../store/useEssenceStore"
 
 export const TurnControl = () => {
-  const { isPlayerTurn, endTurn, combatPhase } = useBattleStore()
+  const { isPlayerTurn, endTurn, combatPhase, resolveCombat } = useBattleStore()
   const { playTurnEndSound } = useAudioStore()
   const { currentPhase, setPhase, nextPhase } = useTurnStore()
+  const { increaseMaxEssence } = useEssenceStore()
 
   const phases = [
     { id: "play", icon: Play, color: "bg-blue-500" },
@@ -28,9 +30,11 @@ export const TurnControl = () => {
       setPhase("combat")
       useBattleStore.setState({ combatPhase: "declare_attackers" })
     } else if (currentPhase === "combat") {
+      resolveCombat() // Resolve combat before moving to end phase
       setPhase("end")
       useBattleStore.setState({ combatPhase: "none" })
     } else if (currentPhase === "end") {
+      increaseMaxEssence() // Increase max essence at end of turn
       endTurn()
       setPhase("play")
     }

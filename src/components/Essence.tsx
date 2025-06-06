@@ -2,7 +2,7 @@ import { useEssenceStore } from "../store/useEssenceStore";
 import { useState, useEffect } from "react";
 
 export const Essence = () => {
-  const { essence, addEssence } = useEssenceStore();
+  const { essence, maxEssence, addEssence } = useEssenceStore();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleAddEssence = () => {
@@ -25,7 +25,7 @@ export const Essence = () => {
         }`}
       >
         <span className="text-purple-300">Essence:</span>
-        <span className="text-purple-100">{essence}</span>
+        <span className="text-purple-100">{essence}/{maxEssence}</span>
       </div>
       <button
         onClick={handleAddEssence}
