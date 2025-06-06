@@ -1,44 +1,68 @@
 import { useEffect, useState, useRef } from "react";
 import flipSound from "../assets/audio/card-flip.mp3";
+import selectSound from "../assets/audio/card-select.mp3";
 import { useCardStore } from "../store/useCardStore";
 import { useAudioStore } from "../store/useAudioStore";
 import { usePileStore } from "../store/usePileStore";
+import { useBattleStore } from "../store/useBattleStore";
 
 interface CardProps {
   frontCardImage: string;
   backCardImage: string;
   cardId: string;
-  attack: number;
+  attackPower: number;
   life: number;
+  currentLife?: number;
   cost: number;
   isNew?: boolean;
   flipped?: boolean;
   isInArena?: boolean;
+  isEnemy?: boolean;
 }
 
 export const Card = ({
   frontCardImage,
   backCardImage,
   cardId,
-  attack,
+  attackPower,
   life,
+  currentLife,
   cost,
   isNew = false,
   flipped = false,
   isInArena = false,
+  isEnemy = false,
 }: CardProps) => {
   const [isFlipped, setIsFlipped] = useState(flipped);
   const [isShowingFrontPart, setIsShowingFrontPart] = useState(true);
   const [isShowingCardInfo, setIsShowingCardInfo] = useState(true);
   const [hasAnimated, setHasAnimated] = useState(!isNew);
+  const [showSparkle, setShowSparkle] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const selectAudioRef = useRef<HTMLAudioElement | null>(null);
   const { setExpandedCard } = useCardStore();
-  const { volume } = useAudioStore();
+  const { effectsVolume } = useAudioStore();
   const { playCardFromHand } = usePileStore();
+  const { 
+    attackingCards,
+    blockingPairs,
+    combatPhase,
+    isPlayerTurn,
+    canAttack,
+    declareAttacker,
+    declareBlocker
+  } = useBattleStore();
 
   useEffect(() => {
     audioRef.current = new Audio(flipSound);
-    audioRef.current.volume = volume;
+    selectAudioRef.current = new Audio(selectSound);
+    
+    if (audioRef.current) {
+      audioRef.current.volume = effectsVolume;
+    }
+    if (selectAudioRef.current) {
+      selectAudioRef.current.volume = effectsVolume;
+    }
 
     if (isNew && !hasAnimated) {
       const timer = setTimeout(() => {
@@ -52,18 +76,44 @@ export const Card = ({
         audioRef.current.pause();
         audioRef.current = null;
       }
+      if (selectAudioRef.current) {
+        selectAudioRef.current.pause();
+        selectAudioRef.current = null;
+      }
     };
-  }, [volume, isNew, hasAnimated]);
+  }, [effectsVolume, isNew, hasAnimated]);
+
+  useEffect(() => {
+    if (showSparkle) {
+      const timer = setTimeout(() => {
+        setShowSparkle(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSparkle]);
+
+  const playSelectSound = () => {
+    if (selectAudioRef.current) {
+      selectAudioRef.current.currentTime = 0;
+      selectAudioRef.current.play().catch((error) => {
+        console.log("Select audio playback failed:", error);
+      });
+    }
+  };
+
+  const playSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((error) => {
+        console.log("Audio playback failed:", error);
+      });
+    }
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsShowingFrontPart(!isFlipped);
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch((error) => {
-          console.log("Audio playback failed:", error);
-        });
-      }
+      playSound();
     }, 125);
 
     return () => clearTimeout(timeout);
@@ -95,9 +145,33 @@ export const Card = ({
   const handleClick = () => {
     if (!isInArena) {
       playCardFromHand(cardId);
+      return;
+    }
+
+    if (!isPlayerTurn) return;
+
+    if (isInArena && combatPhase !== 'none') {
+      if (combatPhase === 'declare_attackers' && !isEnemy && canAttack) {
+        // Declare attacker
+        declareAttacker(cardId);
+        playSelectSound();
+        setShowSparkle(true);
+      } else if (combatPhase === 'declare_blockers' && isEnemy) {
+        // Find the attacking card that this card will block
+        const attackingCard = attackingCards.find(id => {
+          return !blockingPairs.some(pair => pair.blockerId === cardId);
+        });
+        if (attackingCard) {
+          declareBlocker(attackingCard, cardId);
+          playSelectSound();
+          setShowSparkle(true);
+        }
+      }
     }
   };
 
+  const isAttacking = attackingCards.includes(cardId);
+  const isBlocking = blockingPairs.some(pair => pair.blockerId === cardId);
   const animationClass = isNew && !hasAnimated ? "animate-draw" : "";
 
   const handleFlip = (nextState: boolean) => {
@@ -109,7 +183,10 @@ export const Card = ({
   return (
     <>
       <div
-        className={`relative w-64 h-96 cursor-pointer perspective-1000 ${animationClass}`}
+        className={`relative w-64 h-96 cursor-pointer perspective-1000 ${animationClass} 
+          ${isAttacking ? "ring-4 ring-yellow-500" : ""} 
+          ${isBlocking ? "ring-4 ring-blue-500" : ""} 
+          ${showSparkle ? "animate-sparkle" : ""}`}
         onMouseEnter={() => handleFlip(false)}
         onMouseLeave={() => handleFlip(true)}
         onContextMenu={handleContextMenu}
@@ -152,10 +229,10 @@ export const Card = ({
         >
           <div className="relative">
             <div className="absolute inset-0 [filter:drop-shadow(0_0_15px_rgba(239,68,68,0.9))_drop-shadow(0_0_30px_rgba(239,68,68,0.9))] animate-pulse">
-              <span className="text-3xl text-red-500 opacity-0">{attack}</span>
+              <span className="text-3xl text-red-500 opacity-0">{attackPower}</span>
             </div>
             <span className="text-3xl text-red-500 relative [text-shadow:0_0_10px_rgba(239,68,68,0.9)]">
-              {attack}
+              {attackPower}
             </span>
           </div>
         </div>
@@ -167,10 +244,16 @@ export const Card = ({
         >
           <div className="relative">
             <div className="absolute inset-0 [filter:drop-shadow(0_0_15px_rgba(34,197,94,0.9))_drop-shadow(0_0_30px_rgba(34,197,94,0.9))] animate-pulse">
-              <span className="text-3xl text-green-500 opacity-0">{life}</span>
+              <span className="text-3xl text-green-500 opacity-0">
+                {currentLife !== undefined ? currentLife : life}
+              </span>
             </div>
-            <span className="text-3xl text-green-500 relative [text-shadow:0_0_10px_rgba(34,197,94,0.9)]">
-              {life}
+            <span 
+              className={`text-3xl relative [text-shadow:0_0_10px_rgba(34,197,94,0.9)] ${
+                currentLife !== undefined && currentLife < life ? 'text-red-500' : 'text-green-500'
+              }`}
+            >
+              {currentLife !== undefined ? currentLife : life}
             </span>
           </div>
         </div>
@@ -205,8 +288,29 @@ export const Card = ({
             opacity: 1;
           }
         }
-        .animate-draw {
-          animation: draw 0.5s ease-out forwards;
+
+        @keyframes sparkle {
+          0% {
+            filter: brightness(1);
+          }
+          50% {
+            filter: brightness(1.5) drop-shadow(0 0 10px rgba(255, 255, 0, 0.8));
+          }
+          100% {
+            filter: brightness(1);
+          }
+        }
+
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+
+        .transform-style-3d {
+          transform-style: preserve-3d;
+        }
+
+        .backface-hidden {
+          backface-visibility: hidden;
         }
       `}</style>
     </>

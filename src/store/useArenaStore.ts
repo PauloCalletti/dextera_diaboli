@@ -1,13 +1,17 @@
 import { create } from "zustand";
 import { mockCards } from "../mocks/cards";
 
-type CardWithDrawnState = (typeof mockCards)[0] & { isNew?: boolean };
+type CardWithDrawnState = (typeof mockCards)[0] & { 
+  isNew?: boolean;
+  currentLife?: number;
+};
 
 interface ArenaState {
   playerArenaCards: CardWithDrawnState[];
   enemyArenaCards: CardWithDrawnState[];
   playCard: (cardId: string) => void;
   removeCard: (cardId: string, isPlayer: boolean) => void;
+  updateCardLife: (cardId: string, newLife: number, isPlayer: boolean) => void;
 }
 
 export const useArenaStore = create<ArenaState>((set) => ({
@@ -28,7 +32,11 @@ export const useArenaStore = create<ArenaState>((set) => ({
       return {
         playerArenaCards: [
           ...state.playerArenaCards,
-          { ...cardToPlay, isNew: true },
+          { 
+            ...cardToPlay, 
+            isNew: true,
+            currentLife: cardToPlay.life // Initialize current life
+          },
         ],
       };
     });
@@ -48,6 +56,22 @@ export const useArenaStore = create<ArenaState>((set) => ({
             (card) => card.id !== cardId
           ),
         };
+      }
+    });
+  },
+
+  updateCardLife: (cardId, newLife, isPlayer) => {
+    set((state) => {
+      if (isPlayer) {
+        const updatedCards = state.playerArenaCards.map(card =>
+          card.id === cardId ? { ...card, currentLife: newLife } : card
+        );
+        return { playerArenaCards: updatedCards };
+      } else {
+        const updatedCards = state.enemyArenaCards.map(card =>
+          card.id === cardId ? { ...card, currentLife: newLife } : card
+        );
+        return { enemyArenaCards: updatedCards };
       }
     });
   },

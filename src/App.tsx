@@ -1,7 +1,8 @@
 import "./App.css";
 import { Deck } from "./components/Deck";
 import { ExpandedCard } from "./components/ExpandedCard";
-import { VolumeController } from "./components/VolumeController";
+import { VolumeControl } from "./components/VolumeControl";
+import { TurnControl } from "./components/TurnControl";
 import { Pile } from "./components/Pile";
 import { mockCards } from "./mocks/cards";
 import { useCardStore } from "./store/useCardStore";
@@ -15,7 +16,7 @@ import { Arena } from "./components/Arena";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
-  const { volume } = useAudioStore();
+  const { musicVolume } = useAudioStore();
   const { playerHand } = usePileStore();
   const { playerArenaCards, enemyArenaCards } = useArenaStore();
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -36,7 +37,7 @@ function App() {
 
   useEffect(() => {
     themeAudioRef.current = new Audio(themeSound);
-    themeAudioRef.current.volume = volume;
+    themeAudioRef.current.volume = musicVolume;
     themeAudioRef.current.loop = true;
 
     return () => {
@@ -49,9 +50,9 @@ function App() {
 
   useEffect(() => {
     if (themeAudioRef.current) {
-      themeAudioRef.current.volume = volume;
+      themeAudioRef.current.volume = musicVolume;
     }
-  }, [volume]);
+  }, [musicVolume]);
 
   if (!isGameStarted) {
     return (
@@ -91,6 +92,8 @@ function App() {
 
   return (
     <div>
+      <VolumeControl />
+      <TurnControl />
       <Essence />
       <Pile />
       <Deck cards={playerHand} verticalPosition="bottom" />
@@ -108,7 +111,6 @@ function App() {
       )}
 
       <Arena playerCards={playerArenaCards} enemyCards={enemyArenaCards} />
-      <VolumeController />
     </div>
   );
 }
