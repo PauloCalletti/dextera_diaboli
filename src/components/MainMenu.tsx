@@ -1,6 +1,7 @@
 import loopingVideo from "../assets/menu/looping.mp4";
 import startVideo from "../assets/menu/start.mp4";
 import { useEffect, useRef, useState } from "react";
+import { Lore } from "./Lore";
 
 interface MainMenuProps {
   onStartGame: () => void;
@@ -11,6 +12,8 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
   const startVideoRef = useRef<HTMLVideoElement>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showLore, setShowLore] = useState(false);
+  const [shouldRestartVideo, setShouldRestartVideo] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -34,6 +37,26 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
     }
   }, []);
 
+  // Efeito para reiniciar o vídeo quando voltar do Lore
+  useEffect(() => {
+    if (shouldRestartVideo) {
+      const video = videoRef.current;
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+        
+        setTimeout(async () => {
+          try {
+            await video.play();
+          } catch (error) {
+            console.log("Erro ao reiniciar o vídeo:", error);
+          }
+        }, 100);
+      }
+      setShouldRestartVideo(false);
+    }
+  }, [shouldRestartVideo]);
+
   // Efeito para mostrar o menu com fade in
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -41,6 +64,7 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
     }, 500);
 
     return () => clearTimeout(timer);
+    
   }, []);
 
   const handleStartGame = async () => {
@@ -61,6 +85,19 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
       onStartGame();
     }
   };
+
+  const handleLoreClick = () => {
+    setShowLore(true);
+  };
+
+  const handleBackToMenu = () => {
+    setShowLore(false);
+    setShouldRestartVideo(true);
+  };
+
+  if (showLore) {
+    return <Lore onBackToMenu={handleBackToMenu} />;
+  }
 
   return (
     <div className="fixed inset-0 z-50">
@@ -141,6 +178,7 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
             </span>
             
             <span 
+              onClick={handleLoreClick}
               className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300 select-none"
               style={{
                 textShadow: '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)',
@@ -148,7 +186,7 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
                 userSelect: 'none',
               }}
             >
-              Credits
+              Lore
             </span>
           </div>
         </div>
