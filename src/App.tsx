@@ -17,6 +17,7 @@ import DiabolicalLifeCounter from "./components/LifeCounter";
 import { MainMenu } from "./components/MainMenu";
 import { useLifeStore } from "./store/useLifeStore";
 import { GameOver } from "./components/GameOver";
+import { EnemyHand } from "./components/EnemyHand";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
@@ -34,6 +35,7 @@ function App() {
   const startGame = () => {
     setIsGameStarted(true);
     resetLife(); // Reset life points when starting a new game
+    usePileStore.getState().initializePiles(); // Initialize both player and enemy piles
     if (themeAudioRef.current) {
       themeAudioRef.current.play().catch((error) => {
         console.log("Theme audio playback failed:", error);
@@ -75,8 +77,10 @@ function App() {
       <VolumeControl />
       <TurnControl />
       <Essence />
-      <Pile />
+      <Pile isEnemy={false} />
+      <Pile isEnemy={true} />
       <Deck cards={playerHand} verticalPosition="bottom" />
+      <EnemyHand />
       <DiabolicalLifeCounter isEnemy={false} />
       <DiabolicalLifeCounter isEnemy={true} />
 
