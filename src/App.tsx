@@ -15,12 +15,15 @@ import { Essence } from "./components/Essence";
 import { Arena } from "./components/Arena";
 import DiabolicalLifeCounter from "./components/LifeCounter";
 import { MainMenu } from "./components/MainMenu";
+import { useLifeStore } from "./store/useLifeStore";
+import { GameOver } from "./components/GameOver";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
   const { musicVolume } = useAudioStore();
   const { playerHand } = usePileStore();
   const { playerArenaCards, enemyArenaCards } = useArenaStore();
+  const { resetLife, isGameOver } = useLifeStore();
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
 
@@ -30,11 +33,18 @@ function App() {
 
   const startGame = () => {
     setIsGameStarted(true);
+    resetLife(); // Reset life points when starting a new game
     if (themeAudioRef.current) {
       themeAudioRef.current.play().catch((error) => {
         console.log("Theme audio playback failed:", error);
       });
     }
+  };
+
+  const handleRestart = () => {
+    resetLife();
+    // Reset other game states if needed
+    setIsGameStarted(false);
   };
 
   useEffect(() => {
@@ -67,7 +77,8 @@ function App() {
       <Essence />
       <Pile />
       <Deck cards={playerHand} verticalPosition="bottom" />
-      <DiabolicalLifeCounter />
+      <DiabolicalLifeCounter isEnemy={false} />
+      <DiabolicalLifeCounter isEnemy={true} />
 
       {expandedCard && (
         <ExpandedCard
@@ -82,6 +93,8 @@ function App() {
       )}
 
       <Arena playerCards={playerArenaCards} enemyCards={enemyArenaCards} />
+
+      {isGameOver() && <GameOver onRestart={handleRestart} />}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useArenaStore } from "./useArenaStore";
+import { useLifeStore } from "./useLifeStore";
 
 interface BattleState {
   attackingCards: string[];
@@ -25,6 +26,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   setState: (newState) => set(newState),
 
   declareAttacker: (cardId) => {
+    const lifeStore = useLifeStore.getState();
+    if (lifeStore.isGameOver()) return;
+
     set((state) => {
       if (state.combatPhase !== 'declare_attackers') return state;
 
@@ -41,6 +45,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   },
 
   declareBlocker: (attackerId, blockerId) => {
+    const lifeStore = useLifeStore.getState();
+    if (lifeStore.isGameOver()) return;
+
     set((state) => {
       if (state.combatPhase !== 'declare_blockers') return state;
 
@@ -66,7 +73,10 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   resolveCombat: () => {
     const state = get();
     const arenaStore = useArenaStore.getState();
+    const lifeStore = useLifeStore.getState();
     
+    if (lifeStore.isGameOver()) return;
+
     // Process each attacking card
     state.attackingCards.forEach(attackerId => {
       const blockingPair = state.blockingPairs.find(pair => pair.attackerId === attackerId);
@@ -108,8 +118,11 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         }
       } else {
         // Handle unblocked attack - deal damage to opponent
-        // TODO: Implement player life points system
-        console.log(`Direct damage: ${attackingCard.attack}`);
+        if (state.isPlayerTurn) {
+          lifeStore.damageEnemy(attackingCard.attack);
+        } else {
+          lifeStore.damagePlayer(attackingCard.attack);
+        }
       }
     });
 
@@ -123,6 +136,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   },
 
   endTurn: () => {
+    const lifeStore = useLifeStore.getState();
+    if (lifeStore.isGameOver()) return;
+
     set({ 
       isPlayerTurn: false,
       attackingCards: [],
@@ -142,6 +158,9 @@ export const useBattleStore = create<BattleState>((set, get) => ({
   },
 
   startTurn: () => {
+    const lifeStore = useLifeStore.getState();
+    if (lifeStore.isGameOver()) return;
+
     set({ 
       isPlayerTurn: true,
       canAttack: true,
