@@ -12,6 +12,7 @@ interface ArenaState {
   playCard: (cardId: string) => void;
   removeCard: (cardId: string, isPlayer: boolean) => void;
   updateCardLife: (cardId: string, newLife: number, isPlayer: boolean) => void;
+  initializeEnemyCards: () => void;
 }
 
 export const useArenaStore = create<ArenaState>((set) => ({
@@ -75,4 +76,15 @@ export const useArenaStore = create<ArenaState>((set) => ({
       }
     });
   },
+
+  initializeEnemyCards: () => {
+    // Select 5 random cards from mockCards for the enemy
+    const shuffled = [...mockCards].sort(() => 0.5 - Math.random());
+    const selectedCards = shuffled.slice(0, 5).map(card => ({
+      ...card,
+      currentLife: card.life
+    }));
+
+    set({ enemyArenaCards: selectedCards });
+  }
 }));

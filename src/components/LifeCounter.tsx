@@ -1,21 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useLifeStore } from "../store/useLifeStore"
 
 interface DiabolicalLifeCounterProps {
-  initialLife?: number
-  playerName?: string
+  isEnemy?: boolean;
 }
 
 export default function DiabolicalLifeCounter({
-  initialLife = 12,
-  playerName = "Player",
+  isEnemy = false,
 }: DiabolicalLifeCounterProps) {
-  const [life] = useState(initialLife)
+  const { playerLife, enemyLife } = useLifeStore();
+  const life = isEnemy ? enemyLife : playerLife;
 
   return (
     <div 
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 translate-y-[-20px] flex items-center justify-center"
+      className={`fixed ${isEnemy ? 'top-0' : 'bottom-0'} left-1/2 -translate-x-1/2 ${isEnemy ? 'translate-y-[20px]' : 'translate-y-[-20px]'} flex items-center justify-center`}
     >
       {/* Simple Circle */}
       <div className="relative w-32 h-32">
