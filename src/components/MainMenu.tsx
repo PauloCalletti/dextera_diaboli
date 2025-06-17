@@ -119,27 +119,33 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
           <div className="flex flex-col items-center space-y-8">
             <span 
               onClick={handleStartGame}
-              className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300"
+              className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300 select-none"
               style={{
                 textShadow: '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)',
+                outline: 'none',
+                userSelect: 'none',
               }}
             >
               Start Game
             </span>
             
             <span 
-              className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300"
+              className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300 select-none"
               style={{
                 textShadow: '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)',
+                outline: 'none',
+                userSelect: 'none',
               }}
             >
               Options
             </span>
             
             <span 
-              className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300"
+              className="text-4xl font-cinzel text-white cursor-pointer hover:text-purple-300 transition-colors duration-300 select-none"
               style={{
                 textShadow: '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)',
+                outline: 'none',
+                userSelect: 'none',
               }}
             >
               Credits

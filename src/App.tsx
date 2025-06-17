@@ -10,11 +10,14 @@ import { useAudioStore } from "./store/useAudioStore";
 import { usePileStore } from "./store/usePileStore";
 import { useArenaStore } from "./store/useArenaStore";
 import { useEffect, useRef, useState } from "react";
-import themeSound from "./assets/audio/theme.mp3";
+import themeSound from "./assets/audio/battletheme.mp3";
 import { Essence } from "./components/Essence";
 import { Arena } from "./components/Arena";
 import DiabolicalLifeCounter from "./components/LifeCounter";
 import { MainMenu } from "./components/MainMenu";
+import { CharacterSelection } from "./components/CharacterSelection";
+
+type GameState = "menu" | "character-selection" | "arena";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
@@ -22,14 +25,22 @@ function App() {
   const { playerHand } = usePileStore();
   const { playerArenaCards, enemyArenaCards } = useArenaStore();
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
-  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [gameState, setGameState] = useState<GameState>("menu");
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
 
   const filteredExpandedCard = mockCards.find(
     (card) => card.id === expandedCard
   );
 
   const startGame = () => {
-    setIsGameStarted(true);
+    setGameState("character-selection");
+  };
+
+  const handleCharacterSelected = (characterId: string) => {
+    setSelectedCharacter(characterId);
+    setGameState("arena");
+    
+    // Iniciar o tema quando entrar na arena
     if (themeAudioRef.current) {
       themeAudioRef.current.play().catch((error) => {
         console.log("Theme audio playback failed:", error);
@@ -56,8 +67,12 @@ function App() {
     }
   }, [musicVolume]);
 
-  if (!isGameStarted) {
+  if (gameState === "menu") {
     return <MainMenu onStartGame={startGame} />;
+  }
+
+  if (gameState === "character-selection") {
+    return <CharacterSelection onCharacterSelected={handleCharacterSelected} />;
   }
 
   return (
