@@ -1,5 +1,6 @@
 import { Card } from "./Card";
 import { useMemo } from "react";
+import { useBattleStore } from "../store/useBattleStore";
 
 interface ArenaProps {
   playerCards: Array<{
@@ -8,6 +9,7 @@ interface ArenaProps {
     id: string;
     attack: number;
     life: number;
+    currentLife?: number;
     cost: number;
   }>;
   enemyCards: Array<{
@@ -16,6 +18,7 @@ interface ArenaProps {
     id: string;
     attack: number;
     life: number;
+    currentLife?: number;
     cost: number;
   }>;
 }
@@ -48,8 +51,8 @@ export const Arena = ({ playerCards, enemyCards }: ArenaProps) => {
         {/* Enemy side */}
         <div className="flex flex-col mb-8">
           {enemyCardRows.map((row, rowIndex) => (
-            <div key={`enemy-row-${rowIndex}`} className="flex justify-center ">
-              {row.map((card, index) => (
+            <div key={`enemy-row-${rowIndex}`} className="flex justify-center">
+              {row.map((card) => (
                 <div
                   key={card.id}
                   style={{
@@ -61,11 +64,13 @@ export const Arena = ({ playerCards, enemyCards }: ArenaProps) => {
                     frontCardImage={card.frontCardImage}
                     backCardImage={card.backCardImage}
                     cardId={card.id}
-                    attack={card.attack}
+                    attackPower={card.attack}
                     life={card.life}
+                    currentLife={card.currentLife}
                     cost={card.cost}
                     flipped={true}
                     isInArena={true}
+                    isEnemy={true}
                   />
                 </div>
               ))}
@@ -74,13 +79,10 @@ export const Arena = ({ playerCards, enemyCards }: ArenaProps) => {
         </div>
 
         {/* Player side */}
-        <div className="flex flex-col ">
+        <div className="flex flex-col">
           {playerCardRows.map((row, rowIndex) => (
-            <div
-              key={`player-row-${rowIndex}`}
-              className="flex justify-center "
-            >
-              {row.map((card, index) => (
+            <div key={`player-row-${rowIndex}`} className="flex justify-center">
+              {row.map((card) => (
                 <div
                   key={card.id}
                   style={{
@@ -92,11 +94,13 @@ export const Arena = ({ playerCards, enemyCards }: ArenaProps) => {
                     frontCardImage={card.frontCardImage}
                     backCardImage={card.backCardImage}
                     cardId={card.id}
-                    attack={card.attack}
+                    attackPower={card.attack}
                     life={card.life}
+                    currentLife={card.currentLife}
                     cost={card.cost}
                     isInArena={true}
                     flipped={true}
+                    isEnemy={false}
                   />
                 </div>
               ))}
