@@ -15,6 +15,9 @@ import { Essence } from "./components/Essence";
 import { Arena } from "./components/Arena";
 import DiabolicalLifeCounter from "./components/LifeCounter";
 import { MainMenu } from "./components/MainMenu";
+import { useLifeStore } from "./store/useLifeStore";
+import { GameOver } from "./components/GameOver";
+import { EnemyHand } from "./components/EnemyHand";
 import { CharacterSelection } from "./components/CharacterSelection";
 
 type GameState = "menu" | "character-selection" | "arena";
@@ -24,6 +27,7 @@ function App() {
   const { musicVolume } = useAudioStore();
   const { playerHand } = usePileStore();
   const { playerArenaCards, enemyArenaCards } = useArenaStore();
+  const { resetLife, isGameOver } = useLifeStore();
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [gameState, setGameState] = useState<GameState>("menu");
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
@@ -39,13 +43,21 @@ function App() {
   const handleCharacterSelected = (characterId: string) => {
     setSelectedCharacter(characterId);
     setGameState("arena");
+    resetLife(); // Reset life points when starting a new game
+    usePileStore.getState().initializePiles(); // Initialize both player and enemy piles
     
-    // Iniciar o tema quando entrar na arena
+    // Start theme when entering arena
     if (themeAudioRef.current) {
       themeAudioRef.current.play().catch((error) => {
         console.log("Theme audio playback failed:", error);
       });
     }
+  };
+
+  const handleRestart = () => {
+    resetLife();
+    setGameState("menu");
+    setSelectedCharacter(null);
   };
 
   useEffect(() => {
@@ -80,9 +92,12 @@ function App() {
       <VolumeControl />
       <TurnControl />
       <Essence />
-      <Pile />
+      <Pile isEnemy={false} />
+      <Pile isEnemy={true} />
       <Deck cards={playerHand} verticalPosition="bottom" />
-      <DiabolicalLifeCounter />
+      <EnemyHand />
+      <DiabolicalLifeCounter isEnemy={false} />
+      <DiabolicalLifeCounter isEnemy={true} />
 
       {expandedCard && (
         <ExpandedCard
@@ -97,6 +112,8 @@ function App() {
       )}
 
       <Arena playerCards={playerArenaCards} enemyCards={enemyArenaCards} />
+
+      {isGameOver() && <GameOver onRestart={handleRestart} />}
     </div>
   );
 }

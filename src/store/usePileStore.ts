@@ -6,77 +6,95 @@ import { useEssenceStore } from "./useEssenceStore";
 type CardWithDrawnState = (typeof mockCards)[0] & { isNew?: boolean };
 
 interface PileState {
-  pileCards: typeof mockCards;
-  playerHand: CardWithDrawnState[];
+  pileCards: any[];
+  enemyPileCards: any[];
+  playerHand: any[];
+  enemyHand: any[];
   drawCard: () => void;
+  drawEnemyCard: () => void;
   playCardFromHand: (cardId: string) => void;
+  initializePiles: () => void;
 }
 
-export const usePileStore = create<PileState>((set, get) => {
-  // Filter out the 'predador' card and draw initial hand
-  const filteredCards = mockCards.filter((card) => card.id !== "predador");
-  const initialHand = filteredCards
-    .slice(0, 7)
-    .map((card) => ({ ...card, isNew: true }));
-  const initialPile = filteredCards.slice(7);
+export const usePileStore = create<PileState>((set, get) => ({
+  pileCards: [],
+  enemyPileCards: [],
+  playerHand: [],
+  enemyHand: [],
 
-  return {
-    pileCards: initialPile,
-    playerHand: initialHand,
+  initializePiles: () => {
+    // Shuffle the mock cards
+    const shuffledCards = [...mockCards].sort(() => Math.random() - 0.5);
+    
+    // Give each player 5 initial cards
+    const playerInitialHand = shuffledCards.slice(0, 5).map(card => ({ ...card, isNew: true }));
+    const enemyInitialHand = shuffledCards.slice(5, 10).map(card => ({ ...card, isNew: true }));
+    
+    // Rest of the cards go to the piles
+    const playerPile = shuffledCards.slice(10, Math.floor(shuffledCards.length / 2));
+    const enemyPile = shuffledCards.slice(Math.floor(shuffledCards.length / 2));
 
-    drawCard: () => {
-      const state = get();
-      if (state.pileCards.length === 0) return;
+    set({
+      pileCards: playerPile,
+      enemyPileCards: enemyPile,
+      playerHand: playerInitialHand,
+      enemyHand: enemyInitialHand
+    });
+  },
 
-      // Get the top card and check its cost
-      const topCard = state.pileCards[0];
+  drawCard: () => {
+    set((state) => {
+      if (state.pileCards.length === 0) return state;
 
-      // Draw the top card from the pile
-      const drawnCard = { ...topCard, isNew: true };
-      const remainingCards = state.pileCards.slice(1);
-
-      // Clear isNew flag from previously drawn cards
-      const updatedHand = state.playerHand.map((card) => ({
-        ...card,
-        isNew: false,
-      }));
-
-      set({
+      const [drawnCard, ...remainingCards] = state.pileCards;
+      return {
         pileCards: remainingCards,
-        playerHand: [...updatedHand, drawnCard],
-      });
-    },
+        playerHand: [...state.playerHand, { ...drawnCard, isNew: true }],
+      };
+    });
+  },
 
-    playCardFromHand: (cardId: string) => {
-      const state = get();
-      const cardIndex = state.playerHand.findIndex(
-        (card) => card.id === cardId
-      );
+  drawEnemyCard: () => {
+    set((state) => {
+      if (state.enemyPileCards.length === 0) return state;
 
-      if (cardIndex === -1) return;
+      const [drawnCard, ...remainingCards] = state.enemyPileCards;
+      return {
+        enemyPileCards: remainingCards,
+        enemyHand: [...state.enemyHand, { ...drawnCard, isNew: true }],
+      };
+    });
+  },
 
-      // Get the card to be played
-      const cardToPlay = state.playerHand[cardIndex];
+  playCardFromHand: (cardId: string) => {
+    const state = get();
+    const cardIndex = state.playerHand.findIndex(
+      (card) => card.id === cardId
+    );
 
-      // Get the essence store and check if we have enough essence
-      const essenceStore = useEssenceStore.getState();
-      if (!essenceStore.spendEssence(cardToPlay.cost)) {
-        return; // Not enough essence, can't play the card
-      }
+    if (cardIndex === -1) return;
 
-      // Get the arena store
-      const arenaStore = useArenaStore.getState();
+    // Get the card to be played
+    const cardToPlay = state.playerHand[cardIndex];
 
-      // Check if we can play the card (arena not full)
-      if (arenaStore.playerArenaCards.length >= 5) return;
+    // Get the essence store and check if we have enough essence
+    const essenceStore = useEssenceStore.getState();
+    if (!essenceStore.spendEssence(cardToPlay.cost)) {
+      return; // Not enough essence, can't play the card
+    }
 
-      // Remove card from hand and add to arena
-      set((state) => ({
-        playerHand: state.playerHand.filter((card) => card.id !== cardId),
-      }));
+    // Get the arena store
+    const arenaStore = useArenaStore.getState();
 
-      // Add card to arena
-      arenaStore.playCard(cardId);
-    },
-  };
-});
+    // Check if we can play the card (arena not full)
+    if (arenaStore.playerArenaCards.length >= 5) return;
+
+    // Remove card from hand and add to arena
+    set((state) => ({
+      playerHand: state.playerHand.filter((card) => card.id !== cardId),
+    }));
+
+    // Add card to arena
+    arenaStore.playCard(cardId);
+  },
+}));

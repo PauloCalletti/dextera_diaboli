@@ -53,7 +53,7 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   return (
     <div
       className={`fixed w-full ${
-        verticalPosition === "top" ? "top-5" : "bottom-5"
+        verticalPosition === "top" ? "top-5" : "bottom-20"
       }`}
     >
       <div className="relative mx-auto" style={{ maxWidth: "90vw" }}>
@@ -116,11 +116,11 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
           display: flex;
           justify-content: center;
           position: relative;
-          }
-          .card-wrapper {
-            position: absolute;
-            }
-            `}</style>
+        }
+        .card-wrapper {
+          position: absolute;
+        }
+      `}</style>
       {cards.length > 0 && (
         <div className="absolute bottom-[10px]">
           <FlipButton onClick={handleFlipAllCards} cardCount={cards.length} />
