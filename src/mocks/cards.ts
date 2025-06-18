@@ -279,9 +279,9 @@ const baseCards: CardData[] = [
     id: "zumbi-meia-noite",
     frontCardImage: `${import.meta.env.BASE_URL}cards-assets/necromante/zumbi-meia-noite.png`,
     backCardImage: `${import.meta.env.BASE_URL}cards-assets/green-back-card.png`,
-    attack: 5,
-    life: 7,
-    cost: 5,
+    attack: 1,
+    life: 1,
+    cost: 3,
     deck: "necromante",
   },
   {

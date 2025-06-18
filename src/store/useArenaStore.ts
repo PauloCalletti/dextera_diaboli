@@ -16,7 +16,7 @@ interface CardWithDrawnState {
 interface ArenaState {
   playerArenaCards: CardWithDrawnState[];
   enemyArenaCards: CardWithDrawnState[];
-  playCard: (cardId: string) => void;
+  playCard: (cardToPlay: CardWithDrawnState) => void;
   playEnemyCard: (cardId: string) => void;
   removeCard: (cardId: string, isPlayer: boolean) => void;
   updateCardLife: (cardId: string, newLife: number, isPlayer: boolean) => void;
@@ -28,16 +28,11 @@ export const useArenaStore = create<ArenaState>((set) => ({
   playerArenaCards: [],
   enemyArenaCards: [],
 
-  playCard: (cardId) => {
+  playCard: (cardToPlay) => {
     set((state) => {
       if (state.playerArenaCards.length >= 5) {
         return state;
       }
-
-      // Get the card from the pile store
-      const pileStore = usePileStore.getState();
-      const cardToPlay = pileStore.playerHand.find((card) => card.id === cardId);
-      if (!cardToPlay) return state;
 
       return {
         playerArenaCards: [

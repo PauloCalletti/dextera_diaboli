@@ -115,20 +115,9 @@ function App() {
     const cardInHand = playerHand.find((card) => card.id === cardId);
     if (!cardInHand) return;
 
-    // Get the essence store and check if we have enough essence
-    const essenceStore = useEssenceStore.getState();
-    if (!essenceStore.spendEssence(cardInHand.cost)) {
-      return; // Not enough essence, can't play the card
-    }
-
-    // Get the arena store
-    const arenaStore = useArenaStore.getState();
-
-    // Check if we can play the card (arena not full)
-    if (arenaStore.playerArenaCards.length >= 5) return;
-
-    // Play the card to the specified slot
-    arenaStore.playCard(cardId);
+    // Use the pile store's playCardFromHand function which handles everything
+    const pileStore = usePileStore.getState();
+    pileStore.playCardFromHand(cardId);
   };
 
   useEffect(() => {

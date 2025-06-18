@@ -94,7 +94,7 @@ export const usePileStore = create<PileState>((set, get) => ({
     }));
 
     // Add card to arena
-    arenaStore.playCard(cardId);
+    arenaStore.playCard(cardToPlay);
   },
 
   removeEnemyCard: (cardId: string) => {
