@@ -163,7 +163,7 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
                 userSelect: 'none',
               }}
             >
-              Start Game
+              Iniciar Jogo
             </span>
             
             <span 
@@ -174,7 +174,7 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
                 userSelect: 'none',
               }}
             >
-              Options
+              Opções
             </span>
             
             <span 
@@ -186,7 +186,7 @@ export const MainMenu = ({ onStartGame }: MainMenuProps) => {
                 userSelect: 'none',
               }}
             >
-              Lore
+              História
             </span>
           </div>
         </div>
