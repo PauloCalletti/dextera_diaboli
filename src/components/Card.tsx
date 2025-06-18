@@ -181,7 +181,7 @@ export const Card = ({
           
           // Find a player card that isn't already blocking
           const availableBlocker = playerCards.find((playerCard) => {
-            return !blockingPairs.some((pair) => pair.blockerId === playerCard.id);
+            return playerCard && !blockingPairs.some((pair) => pair.blockerId === playerCard.id);
           });
           
           if (availableBlocker) {

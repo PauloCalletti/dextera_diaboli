@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { baseCards } from "../mocks/cards";
-import { usePileStore } from "./usePileStore";
 
 interface CardWithDrawnState {
   id: string;
