@@ -1,9 +1,10 @@
 import { create } from "zustand";
-import { mockCards } from "../mocks/cards";
+import { getDeck, baseCards } from "../mocks/cards";
+import type { DeckId } from "../mocks/cards";
 import { useArenaStore } from "./useArenaStore";
 import { useEssenceStore } from "./useEssenceStore";
 
-type CardWithDrawnState = (typeof mockCards)[0] & { isNew?: boolean };
+type CardWithDrawnState = (typeof baseCards)[0] & { isNew?: boolean };
 
 interface PileState {
   pileCards: any[];
@@ -14,7 +15,7 @@ interface PileState {
   drawEnemyCard: () => void;
   playCardFromHand: (cardId: string) => void;
   removeEnemyCard: (cardId: string) => void;
-  initializePiles: () => void;
+  initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => void;
 }
 
 export const usePileStore = create<PileState>((set, get) => ({
@@ -23,24 +24,18 @@ export const usePileStore = create<PileState>((set, get) => ({
   playerHand: [],
   enemyHand: [],
 
-  initializePiles: () => {
-    // Shuffle the mock cards
-    const shuffledCards = [...mockCards].sort(() => Math.random() - 0.5);
+  initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => {
+    // Create and shuffle a 20-card deck for each player
+    const playerDeck = getDeck(playerDeckId).sort(() => Math.random() - 0.5);
+    const enemyDeck = getDeck(enemyDeckId).sort(() => Math.random() - 0.5);
 
-    // Give each player 5 initial cards
-    const playerInitialHand = shuffledCards
-      .slice(0, 5)
-      .map((card) => ({ ...card, isNew: true }));
-    const enemyInitialHand = shuffledCards
-      .slice(5, 10)
-      .map((card) => ({ ...card, isNew: true }));
+    // Give each player 5 initial cards in hand
+    const playerInitialHand = playerDeck.slice(0, 5).map((card) => ({ ...card, isNew: true }));
+    const enemyInitialHand = enemyDeck.slice(0, 5).map((card) => ({ ...card, isNew: true }));
 
-    // Rest of the cards go to the piles
-    const playerPile = shuffledCards.slice(
-      10,
-      Math.floor(shuffledCards.length / 2)
-    );
-    const enemyPile = shuffledCards.slice(Math.floor(shuffledCards.length / 2));
+    // The rest go to their respective piles
+    const playerPile = playerDeck.slice(5);
+    const enemyPile = enemyDeck.slice(5);
 
     set({
       pileCards: playerPile,

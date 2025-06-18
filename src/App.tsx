@@ -3,7 +3,7 @@ import { Deck } from "./components/Deck";
 import { ExpandedCard } from "./components/ExpandedCard";
 import { TurnControl } from "./components/TurnControl";
 import { Pile } from "./components/Pile";
-import { mockCards } from "./mocks/cards";
+import { baseCards } from "./mocks/cards";
 import { useCardStore } from "./store/useCardStore";
 import { useAudioStore } from "./store/useAudioStore";
 import { usePileStore } from "./store/usePileStore";
@@ -22,6 +22,7 @@ import { useEssenceStore } from "./store/useEssenceStore";
 import { useBattleStore } from "./store/useBattleStore";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
+import type { DeckId } from "./mocks/cards";
 
 type GameState = "menu" | "character-selection" | "arena";
 
@@ -38,10 +39,13 @@ function App() {
   );
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [overSlotId, setOverSlotId] = useState<string | null>(null);
+  const [enemyDeck, setEnemyDeck] = useState<DeckId | null>(null);
 
-  const filteredExpandedCard = mockCards.find(
+  const filteredExpandedCard = baseCards.find(
     (card) => card.id === expandedCard
   );
+
+  const allDecks: DeckId[] = ["mercador", "necromante", "mago"];
 
   const startGame = () => {
     setGameState("character-selection");
@@ -50,8 +54,12 @@ function App() {
   const handleCharacterSelected = (characterId: string) => {
     setSelectedCharacter(characterId);
     setGameState("arena");
-    resetLife(); // Reset life points when starting a new game
-    usePileStore.getState().initializePiles(); // Initialize both player and enemy piles
+    resetLife();
+    // Pick a random deck for the enemy that is not the player's choice
+    const enemyDeckOptions = allDecks.filter(deck => deck !== characterId);
+    const enemyDeckId = enemyDeckOptions[Math.floor(Math.random() * enemyDeckOptions.length)];
+    setEnemyDeck(enemyDeckId);
+    usePileStore.getState().initializePiles(characterId as DeckId, enemyDeckId);
 
     // Start theme when entering arena
     if (themeAudioRef.current) {
@@ -66,7 +74,10 @@ function App() {
     setGameState("menu");
     setSelectedCharacter(null);
     useCardStore.getState().setExpandedCard(null);
-    usePileStore.getState().initializePiles();
+    // On restart, re-initialize piles with the last selected decks if available
+    if (selectedCharacter && enemyDeck) {
+      usePileStore.getState().initializePiles(selectedCharacter as DeckId, enemyDeck);
+    }
     useArenaStore.getState().resetArena();
     useEssenceStore.getState().resetEssence();
     useBattleStore.getState().setState({

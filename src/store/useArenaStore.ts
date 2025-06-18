@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { mockCards } from "../mocks/cards";
+import { baseCards } from "../mocks/cards";
 
 interface CardWithDrawnState {
   id: string;
@@ -33,7 +33,7 @@ export const useArenaStore = create<ArenaState>((set) => ({
         return state;
       }
 
-      const cardToPlay = mockCards.find((card) => card.id === cardId);
+      const cardToPlay = baseCards.find((card) => card.id === cardId);
       if (!cardToPlay) return state;
 
       return {
@@ -55,7 +55,7 @@ export const useArenaStore = create<ArenaState>((set) => ({
         return state;
       }
 
-      const cardToPlay = mockCards.find((card) => card.id === cardId);
+      const cardToPlay = baseCards.find((card) => card.id === cardId);
       if (!cardToPlay) return state;
 
       return {
