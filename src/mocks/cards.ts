@@ -281,7 +281,7 @@ const baseCards: CardData[] = [
     backCardImage: `${import.meta.env.BASE_URL}cards-assets/green-back-card.png`,
     attack: 1,
     life: 1,
-    cost: 3,
+    cost: 10,
     deck: "necromante",
   },
   {
@@ -298,8 +298,8 @@ const baseCards: CardData[] = [
     frontCardImage: `${import.meta.env.BASE_URL}cards-assets/necromante/necroamante.png`,
     backCardImage: `${import.meta.env.BASE_URL}cards-assets/green-back-card.png`,
     attack: 6,
-    life: 6,
-    cost: 5,
+    life: 5,
+    cost: 4,
     deck: "necromante",
   },
   {

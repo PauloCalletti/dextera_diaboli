@@ -23,6 +23,7 @@ import { useBattleStore } from "./store/useBattleStore";
 import { DndContext } from "@dnd-kit/core";
 import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import type { DeckId } from "./mocks/cards";
+import { useTurnStore } from "./store/useTurnStore";
 
 type GameState = "menu" | "character-selection" | "arena";
 
@@ -110,14 +111,40 @@ function App() {
     if (!over) return;
 
     const cardId = active.id as string;
+    const slotId = over.id as string;
 
     // Check if the card is in the player's hand
     const cardInHand = playerHand.find((card) => card.id === cardId);
     if (!cardInHand) return;
 
-    // Use the pile store's playCardFromHand function which handles everything
+    // Check if we're dropping on a player slot
+    if (!slotId.startsWith("player-slot-")) return;
+
+    // Check if it's the player's turn AND we're in the play phase
+    const turnStore = useTurnStore.getState();
+    if (!turnStore.isPlayerTurn || turnStore.currentPhase !== "play") return;
+
+    // Extract the slot index
+    const slotIndex = parseInt(slotId.split("-")[2]);
+
+    // Get the essence store and check if we have enough essence
+    const essenceStore = useEssenceStore.getState();
+    if (!essenceStore.spendEssence(cardInHand.cost)) {
+      return; // Not enough essence, can't play the card
+    }
+
+    // Get the arena store
+    const arenaStore = useArenaStore.getState();
+
+    // Check if we can play the card (arena not full)
+    if (arenaStore.playerArenaCards.length >= 5) return;
+
+    // Remove card from hand
     const pileStore = usePileStore.getState();
-    pileStore.playCardFromHand(cardId);
+    pileStore.removeCardFromHand(cardId);
+
+    // Play the card in the specific slot
+    arenaStore.playCardInSlot(cardInHand, slotIndex);
   };
 
   useEffect(() => {

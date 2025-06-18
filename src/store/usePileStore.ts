@@ -12,6 +12,7 @@ interface PileState {
   drawCard: () => void;
   drawEnemyCard: () => void;
   playCardFromHand: (cardId: string) => void;
+  removeCardFromHand: (cardId: string) => void;
   removeEnemyCard: (cardId: string) => void;
   initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => void;
 }
@@ -88,13 +89,19 @@ export const usePileStore = create<PileState>((set, get) => ({
     // Check if we can play the card (arena not full)
     if (arenaStore.playerArenaCards.length >= 5) return;
 
-    // Remove card from hand and add to arena
+    // Remove card from hand
     set((state) => ({
       playerHand: state.playerHand.filter((card) => card.id !== cardId),
     }));
 
-    // Add card to arena
+    // Add card to arena (default behavior)
     arenaStore.playCard(cardToPlay);
+  },
+
+  removeCardFromHand: (cardId: string) => {
+    set((state) => ({
+      playerHand: state.playerHand.filter((card) => card.id !== cardId),
+    }));
   },
 
   removeEnemyCard: (cardId: string) => {

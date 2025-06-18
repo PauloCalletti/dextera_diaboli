@@ -1,6 +1,7 @@
 import { Card } from "./Card";
 import { useMemo, useState } from "react";
 import { FlipButton } from "./FlipButton";
+import { useTurnStore } from "../store/useTurnStore";
 
 interface DeckProps {
   cards: Array<{
@@ -18,6 +19,7 @@ interface DeckProps {
 export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [flipAllCards, setFlipAllCards] = useState(false);
+  const { isPlayerTurn, currentPhase } = useTurnStore();
 
   // Calculate card scale based on number of cards
   const cardScale = useMemo(() => {
@@ -49,6 +51,9 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   const handleFlipAllCards = () => {
     setFlipAllCards(!flipAllCards);
   };
+
+  // Determine if cards should be draggable
+  const isDraggable = verticalPosition === "bottom" && isPlayerTurn && currentPhase === "play";
 
   return (
     <div
@@ -109,7 +114,7 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
                     cost={card.cost}
                     isNew={card.isNew}
                     isEnemy={verticalPosition === "top"}
-                    isDraggable={verticalPosition === "bottom"}
+                    isDraggable={isDraggable}
                     flipped={
                       verticalPosition === "top"
                         ? false

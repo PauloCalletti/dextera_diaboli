@@ -21,7 +21,7 @@ export const Pile = ({ isEnemy = false }: PileProps) => {
   return (
     <div
       className={`fixed ${isEnemy ? "top-8" : "bottom-8"} ${
-        isEnemy ? "right-[225px]" : "left-[225px]"
+        isEnemy ? "right-[225px]" : "left-[150px]"
       } z-10`}
     >
       <div
