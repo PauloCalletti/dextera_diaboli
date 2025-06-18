@@ -1,3 +1,5 @@
+export type DeckId = "mercador" | "necromante" | "mago";
+
 type CardData = {
   id: string;
   frontCardImage: string;
@@ -5,80 +7,118 @@ type CardData = {
   attack: number;
   life: number;
   cost: number;
+  deck: DeckId;
 };
 
 const baseCards: CardData[] = [
+  // MAGO
   {
     id: "maguila",
-    frontCardImage: "/cards-assets/maguila.png",
+    frontCardImage: "/cards-assets/mercador/maguila.png",
     backCardImage: "/cards-assets/red-back-card.png",
     attack: 8,
     life: 12,
     cost: 7,
+    deck: "mercador",
   },
   {
+    id: "mago-errrante",
+    frontCardImage: "/cards-assets/mago/mago-errrante.png",
+    backCardImage: "/cards-assets/blue-back-card.png",
+    attack: 5,
+    life: 5,
+    cost: 3,
+    deck: "mago",
+  },
+  {
+    id: "montanha",
+    frontCardImage: "/cards-assets/mago/montanha.png",
+    backCardImage: "/cards-assets/blue-back-card.png",
+    attack: 5,
+    life: 5,
+    cost: 3,
+    deck: "mago",
+  },
+  {
+    id: "predador",
+    frontCardImage: "/cards-assets/mago/predador.png",
+    backCardImage: "/cards-assets/blue-back-card.png",
+    attack: 5,
+    life: 5,
+    cost: 3,
+    deck: "mago",
+  },
+  // NECROMANTE
+  {
     id: "meia-noite",
-    frontCardImage: "/cards-assets/meia-noite.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: "/cards-assets/necromante/meia-noite.png",
+    backCardImage: "/cards-assets/green-back-card.png",
     attack: 12,
     life: 8,
     cost: 8,
+    deck: "necromante",
   },
   {
+    id: "cavaleiro-eterno",
+    frontCardImage: "/cards-assets/necromante/cavaleiro-eterno.png",
+    backCardImage: "/cards-assets/green-back-card.png",
+    attack: 5,
+    life: 5,
+    cost: 3,
+    deck: "necromante",
+  },
+  // MERCADOR
+  {
     id: "kungf-u",
-    frontCardImage: "/cards-assets/kungf-u.png",
+    frontCardImage: "/cards-assets/mercador/kungf-u.png",
     backCardImage: "/cards-assets/red-back-card.png",
     attack: 6,
     life: 6,
     cost: 4,
+    deck: "mercador",
   },
   {
     id: "zumbi-dos-palmares",
-    frontCardImage: "/cards-assets/zumbi-dos-palmares.png",
+    frontCardImage: "/cards-assets/mercador/zumbi-dos-palmares.png",
     backCardImage: "/cards-assets/red-back-card.png",
     attack: 15,
     life: 15,
     cost: 10,
+    deck: "mercador",
   },
   {
     id: "falso-querubim",
-    frontCardImage: "/cards-assets/falso-querubim.png",
+    frontCardImage: "/cards-assets/mercador/falso-querubim.png",
     backCardImage: "/cards-assets/red-back-card.png",
     attack: 7,
     life: 5,
     cost: 5,
+    deck: "mercador",
   },
   {
     id: "fumador-de-almas",
-    frontCardImage: "/cards-assets/fumador-de-almas.png",
+    frontCardImage: "/cards-assets/mercador/fumador-de-almas.png",
     backCardImage: "/cards-assets/red-back-card.png",
     attack: 4,
     life: 8,
     cost: 6,
+    deck: "mercador",
   },
   {
     id: "homem-com-forca-de-burro",
-    frontCardImage: "/cards-assets/homem-com-forca-de-burro.png",
+    frontCardImage: "/cards-assets/mercador/homem-com-forca-de-burro.png",
     backCardImage: "/cards-assets/red-back-card.png",
     attack: 10,
     life: 10,
     cost: 7,
+    deck: "mercador",
   },
 ];
 
-// Create variations maintaining the core stats
-export const mockCards: CardData[] = Array.from({ length: 50 }, (_, index) => {
-  const baseCard = baseCards[index % baseCards.length];
-  const variation = Math.floor(index / baseCards.length) + 1;
-  
-  if (variation === 1) return baseCard; // First version is the original card
-  
-  // Create evolved versions with enhanced stats
-  return {
-    ...baseCard,
-    id: `${baseCard.id}-${variation}`,
-    attack: Math.min(20, Math.floor(baseCard.attack * (1 + variation * 0.2))),
-    life: Math.min(20, Math.floor(baseCard.life * (1 + variation * 0.15))),
-    cost: Math.min(10, baseCard.cost + Math.floor(variation / 2)),
-  };
-});
+// Each player should have a hand/pile of 20 cards, repeating baseCards as needed
+export function getDeck(deck: DeckId): CardData[] {
+  const cards = baseCards.filter(card => card.deck === deck);
+  return Array.from({ length: 20 }, (_, i) => cards[i % cards.length]);
+}
+
+export { baseCards };

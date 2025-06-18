@@ -1,18 +1,26 @@
 import { create } from "zustand";
-import { mockCards } from "../mocks/cards";
+import { baseCards } from "../mocks/cards";
 
-type CardWithDrawnState = (typeof mockCards)[0] & { 
-  isNew?: boolean;
+interface CardWithDrawnState {
+  id: string;
+  frontCardImage: string;
+  backCardImage: string;
+  attack: number;
+  life: number;
   currentLife?: number;
-};
+  cost: number;
+  isNew?: boolean;
+}
 
 interface ArenaState {
   playerArenaCards: CardWithDrawnState[];
   enemyArenaCards: CardWithDrawnState[];
   playCard: (cardId: string) => void;
+  playEnemyCard: (cardId: string) => void;
   removeCard: (cardId: string, isPlayer: boolean) => void;
   updateCardLife: (cardId: string, newLife: number, isPlayer: boolean) => void;
   initializeEnemyCards: () => void;
+  resetArena: () => void;
 }
 
 export const useArenaStore = create<ArenaState>((set) => ({
@@ -21,22 +29,42 @@ export const useArenaStore = create<ArenaState>((set) => ({
 
   playCard: (cardId) => {
     set((state) => {
-      // Check if we already have 5 cards in the arena
       if (state.playerArenaCards.length >= 5) {
         return state;
       }
 
-      // Find the card in the player's hand (this would be implemented in usePileStore)
-      const cardToPlay = mockCards.find((card) => card.id === cardId);
+      const cardToPlay = baseCards.find((card) => card.id === cardId);
       if (!cardToPlay) return state;
 
       return {
         playerArenaCards: [
           ...state.playerArenaCards,
-          { 
-            ...cardToPlay, 
+          {
+            ...cardToPlay,
             isNew: true,
-            currentLife: cardToPlay.life // Initialize current life
+            currentLife: cardToPlay.life,
+          },
+        ],
+      };
+    });
+  },
+
+  playEnemyCard: (cardId) => {
+    set((state) => {
+      if (state.enemyArenaCards.length >= 5) {
+        return state;
+      }
+
+      const cardToPlay = baseCards.find((card) => card.id === cardId);
+      if (!cardToPlay) return state;
+
+      return {
+        enemyArenaCards: [
+          ...state.enemyArenaCards,
+          {
+            ...cardToPlay,
+            isNew: true,
+            currentLife: cardToPlay.life,
           },
         ],
       };
@@ -64,12 +92,12 @@ export const useArenaStore = create<ArenaState>((set) => ({
   updateCardLife: (cardId, newLife, isPlayer) => {
     set((state) => {
       if (isPlayer) {
-        const updatedCards = state.playerArenaCards.map(card =>
+        const updatedCards = state.playerArenaCards.map((card) =>
           card.id === cardId ? { ...card, currentLife: newLife } : card
         );
         return { playerArenaCards: updatedCards };
       } else {
-        const updatedCards = state.enemyArenaCards.map(card =>
+        const updatedCards = state.enemyArenaCards.map((card) =>
           card.id === cardId ? { ...card, currentLife: newLife } : card
         );
         return { enemyArenaCards: updatedCards };
@@ -78,13 +106,10 @@ export const useArenaStore = create<ArenaState>((set) => ({
   },
 
   initializeEnemyCards: () => {
-    // Select 5 random cards from mockCards for the enemy
-    const shuffled = [...mockCards].sort(() => 0.5 - Math.random());
-    const selectedCards = shuffled.slice(0, 5).map(card => ({
-      ...card,
-      currentLife: card.life
-    }));
+    set({ enemyArenaCards: [] });
+  },
 
-    set({ enemyArenaCards: selectedCards });
-  }
+  resetArena: () => {
+    set({ playerArenaCards: [], enemyArenaCards: [] });
+  },
 }));

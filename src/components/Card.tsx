@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import flipSound from "../assets/audio/card-flip.mp3";
 import selectSound from "../assets/audio/card-select.mp3";
 import { useCardStore } from "../store/useCardStore";
@@ -18,6 +20,7 @@ interface CardProps {
   flipped?: boolean;
   isInArena?: boolean;
   isEnemy?: boolean;
+  isDraggable?: boolean;
 }
 
 export const Card = ({
@@ -32,6 +35,7 @@ export const Card = ({
   flipped = false,
   isInArena = false,
   isEnemy = false,
+  isDraggable = false,
 }: CardProps) => {
   const [isFlipped, setIsFlipped] = useState(flipped);
   const [isShowingFrontPart, setIsShowingFrontPart] = useState(true);
@@ -43,20 +47,32 @@ export const Card = ({
   const { setExpandedCard } = useCardStore();
   const { effectsVolume } = useAudioStore();
   const { playCardFromHand } = usePileStore();
-  const { 
+  const {
     attackingCards,
     blockingPairs,
     combatPhase,
     isPlayerTurn,
     canAttack,
     declareAttacker,
-    declareBlocker
+    declareBlocker,
   } = useBattleStore();
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: cardId,
+      disabled: !isDraggable || isEnemy || isInArena,
+    });
+
+  const style = transform
+    ? {
+        transform: CSS.Transform.toString(transform),
+      }
+    : undefined;
 
   useEffect(() => {
     audioRef.current = new Audio(flipSound);
     selectAudioRef.current = new Audio(selectSound);
-    
+
     if (audioRef.current) {
       audioRef.current.volume = effectsVolume;
     }
@@ -150,16 +166,14 @@ export const Card = ({
 
     if (!isPlayerTurn) return;
 
-    if (isInArena && combatPhase !== 'none') {
-      if (combatPhase === 'declare_attackers' && !isEnemy && canAttack) {
-        // Declare attacker
+    if (isInArena && combatPhase !== "none") {
+      if (combatPhase === "declare_attackers" && !isEnemy && canAttack) {
         declareAttacker(cardId);
         playSelectSound();
         setShowSparkle(true);
-      } else if (combatPhase === 'declare_blockers' && isEnemy) {
-        // Find the attacking card that this card will block
-        const attackingCard = attackingCards.find(id => {
-          return !blockingPairs.some(pair => pair.blockerId === cardId);
+      } else if (combatPhase === "declare_blockers" && isEnemy) {
+        const attackingCard = attackingCards.find((id) => {
+          return !blockingPairs.some((pair) => pair.blockerId === cardId);
         });
         if (attackingCard) {
           declareBlocker(attackingCard, cardId);
@@ -171,22 +185,34 @@ export const Card = ({
   };
 
   const isAttacking = attackingCards.includes(cardId);
-  const isBlocking = blockingPairs.some(pair => pair.blockerId === cardId);
+  const isBlocking = blockingPairs.some((pair) => pair.blockerId === cardId);
   const animationClass = isNew && !hasAnimated ? "animate-draw" : "";
 
   const handleFlip = (nextState: boolean) => {
-    if (flipped !== true) {
+    if (flipped !== true && !isEnemy && !isDragging) {
       setIsFlipped(nextState);
     }
   };
 
+  useEffect(() => {
+    if (isDragging) {
+      setIsFlipped(false);
+    }
+  }, [isDragging]);
+
   return (
     <>
       <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
         className={`relative w-64 h-96 cursor-pointer perspective-1000 ${animationClass} 
           ${isAttacking ? "ring-4 ring-yellow-500" : ""} 
           ${isBlocking ? "ring-4 ring-blue-500" : ""} 
-          ${showSparkle ? "animate-sparkle" : ""}`}
+          ${showSparkle ? "animate-sparkle" : ""}
+          ${isDraggable ? "cursor-grab active:cursor-grabbing" : ""}
+          ${isDragging ? "z-50" : ""}`}
         onMouseEnter={() => handleFlip(false)}
         onMouseLeave={() => handleFlip(true)}
         onContextMenu={handleContextMenu}
@@ -229,7 +255,9 @@ export const Card = ({
         >
           <div className="relative">
             <div className="absolute inset-0 [filter:drop-shadow(0_0_15px_rgba(239,68,68,0.9))_drop-shadow(0_0_30px_rgba(239,68,68,0.9))] animate-pulse">
-              <span className="text-3xl text-red-500 opacity-0">{attackPower}</span>
+              <span className="text-3xl text-red-500 opacity-0">
+                {attackPower}
+              </span>
             </div>
             <span className="text-3xl text-red-500 relative [text-shadow:0_0_10px_rgba(239,68,68,0.9)]">
               {attackPower}
@@ -248,9 +276,11 @@ export const Card = ({
                 {currentLife !== undefined ? currentLife : life}
               </span>
             </div>
-            <span 
+            <span
               className={`text-3xl relative [text-shadow:0_0_10px_rgba(34,197,94,0.9)] ${
-                currentLife !== undefined && currentLife < life ? 'text-red-500' : 'text-green-500'
+                currentLife !== undefined && currentLife < life
+                  ? "text-red-500"
+                  : "text-green-500"
               }`}
             >
               {currentLife !== undefined ? currentLife : life}

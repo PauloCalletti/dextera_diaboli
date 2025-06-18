@@ -1,6 +1,7 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import { usePileStore } from "./usePileStore";
 
-type Phase = 'play' | 'combat' | 'end';
+type Phase = "play" | "combat" | "end";
 
 interface TurnState {
   currentPhase: Phase;
@@ -11,28 +12,36 @@ interface TurnState {
 }
 
 export const useTurnStore = create<TurnState>((set) => ({
-  currentPhase: 'play',
+  currentPhase: "play",
   isPlayerTurn: true,
 
   setPhase: (phase) => set({ currentPhase: phase }),
-  
-  nextPhase: () => set((state) => {
-    const phases: Phase[] = ['play', 'combat', 'end'];
-    const currentIndex = phases.indexOf(state.currentPhase);
-    
-    if (currentIndex === phases.length - 1) {
-      // If we're at the end phase, switch to opponent's turn
-      return {
-        currentPhase: 'play',
-        isPlayerTurn: false
-      };
-    }
-    
-    // Otherwise, move to next phase
-    return {
-      currentPhase: phases[currentIndex + 1]
-    };
-  }),
 
-  setPlayerTurn: (isPlayerTurn) => set({ isPlayerTurn })
-})); 
+  nextPhase: () =>
+    set((state) => {
+      const phases: Phase[] = ["play", "combat", "end"];
+      const currentIndex = phases.indexOf(state.currentPhase);
+
+      if (currentIndex === phases.length - 1) {
+        // If we're at the end phase, switch to opponent's turn
+        return {
+          currentPhase: "play",
+          isPlayerTurn: false,
+        };
+      }
+
+      // Otherwise, move to next phase
+      return {
+        currentPhase: phases[currentIndex + 1],
+      };
+    }),
+
+  setPlayerTurn: (isPlayerTurn) => {
+    set({ isPlayerTurn });
+    // Draw a card when it becomes the player's turn
+    if (isPlayerTurn) {
+      const pileStore = usePileStore.getState();
+      pileStore.drawCard();
+    }
+  },
+}));
