@@ -172,7 +172,7 @@ export const Card = ({
         playSelectSound();
         setShowSparkle(true);
       } else if (combatPhase === "declare_blockers" && isEnemy) {
-        const attackingCard = attackingCards.find((id) => {
+        const attackingCard = attackingCards.find(() => {
           return !blockingPairs.some((pair) => pair.blockerId === cardId);
         });
         if (attackingCard) {

@@ -1,8 +1,6 @@
 import { Card } from "./Card";
 import { useMemo } from "react";
-import { useBattleStore } from "../store/useBattleStore";
 import { useDroppable } from "@dnd-kit/core";
-import { useArenaStore } from "../store/useArenaStore";
 import { usePileStore } from "../store/usePileStore";
 import { useEssenceStore } from "../store/useEssenceStore";
 

@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "./ui/button";
 import { Sword, Play, SkipForward } from "lucide-react";
 import { useBattleStore } from "../store/useBattleStore";
 import { useAudioStore } from "../store/useAudioStore";
@@ -10,10 +8,9 @@ import { useEssenceStore } from "../store/useEssenceStore";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const TurnControl = () => {
-  const { isPlayerTurn, endTurn, combatPhase, resolveCombat } =
-    useBattleStore();
+  const { isPlayerTurn, endTurn, resolveCombat } = useBattleStore();
   const { playTurnEndSound } = useAudioStore();
-  const { currentPhase, setPhase, nextPhase } = useTurnStore();
+  const { currentPhase, setPhase } = useTurnStore();
   const { increaseMaxEssence } = useEssenceStore();
 
   const phases = [

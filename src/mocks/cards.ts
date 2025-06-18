@@ -14,8 +14,8 @@ const baseCards: CardData[] = [
   // MAGO
   {
     id: "maguila",
-    frontCardImage: "/cards-assets/mercador/maguila.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mercador/maguila.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/red-back-card.png`,
     attack: 8,
     life: 12,
     cost: 7,
@@ -23,8 +23,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "mago-errrante",
-    frontCardImage: "/cards-assets/mago/mago-errrante.png",
-    backCardImage: "/cards-assets/blue-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mago/mago-errrante.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/blue-back-card.png`,
     attack: 5,
     life: 5,
     cost: 3,
@@ -32,8 +32,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "montanha",
-    frontCardImage: "/cards-assets/mago/montanha.png",
-    backCardImage: "/cards-assets/blue-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mago/montanha.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/blue-back-card.png`,
     attack: 5,
     life: 5,
     cost: 3,
@@ -41,8 +41,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "predador",
-    frontCardImage: "/cards-assets/mago/predador.png",
-    backCardImage: "/cards-assets/blue-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mago/predador.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/blue-back-card.png`,
     attack: 5,
     life: 5,
     cost: 3,
@@ -51,8 +51,8 @@ const baseCards: CardData[] = [
   // NECROMANTE
   {
     id: "meia-noite",
-    frontCardImage: "/cards-assets/necromante/meia-noite.png",
-    backCardImage: "/cards-assets/green-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/necromante/meia-noite.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/green-back-card.png`,
     attack: 12,
     life: 8,
     cost: 8,
@@ -60,8 +60,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "cavaleiro-eterno",
-    frontCardImage: "/cards-assets/necromante/cavaleiro-eterno.png",
-    backCardImage: "/cards-assets/green-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/necromante/cavaleiro-eterno.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/green-back-card.png`,
     attack: 5,
     life: 5,
     cost: 3,
@@ -70,8 +70,8 @@ const baseCards: CardData[] = [
   // MERCADOR
   {
     id: "kungf-u",
-    frontCardImage: "/cards-assets/mercador/kungf-u.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mercador/kungf-u.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/red-back-card.png`,
     attack: 6,
     life: 6,
     cost: 4,
@@ -79,8 +79,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "zumbi-dos-palmares",
-    frontCardImage: "/cards-assets/mercador/zumbi-dos-palmares.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mercador/zumbi-dos-palmares.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/red-back-card.png`,
     attack: 15,
     life: 15,
     cost: 10,
@@ -88,8 +88,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "falso-querubim",
-    frontCardImage: "/cards-assets/mercador/falso-querubim.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mercador/falso-querubim.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/red-back-card.png`,
     attack: 7,
     life: 5,
     cost: 5,
@@ -97,8 +97,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "fumador-de-almas",
-    frontCardImage: "/cards-assets/mercador/fumador-de-almas.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mercador/fumador-de-almas.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/red-back-card.png`,
     attack: 4,
     life: 8,
     cost: 6,
@@ -106,8 +106,8 @@ const baseCards: CardData[] = [
   },
   {
     id: "homem-com-forca-de-burro",
-    frontCardImage: "/cards-assets/mercador/homem-com-forca-de-burro.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    frontCardImage: `${import.meta.env.BASE_URL}cards-assets/mercador/homem-com-forca-de-burro.png`,
+    backCardImage: `${import.meta.env.BASE_URL}cards-assets/red-back-card.png`,
     attack: 10,
     life: 10,
     cost: 7,

@@ -23,8 +23,8 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   const cardScale = useMemo(() => {
     const cardHeight = 384; // h-96 = 384px
     const containerHeight = 150;
-    // Double the scale since we're only showing 50% by default
-    return (containerHeight * 2) / cardHeight;
+    // Adjust scale to be smaller in production
+    return Math.min((containerHeight * 2) / cardHeight, 0.65);
   }, []);
 
   // Calculate the spacing between cards based on available width

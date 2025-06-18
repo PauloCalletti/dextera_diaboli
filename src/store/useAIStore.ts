@@ -11,7 +11,7 @@ interface AIState {
   makeDecision: () => Promise<void>;
 }
 
-export const useAIStore = create<AIState>((set, get) => ({
+export const useAIStore = create<AIState>((set) => ({
   isThinking: false,
 
   makeDecision: async () => {

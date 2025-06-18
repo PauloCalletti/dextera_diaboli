@@ -20,7 +20,7 @@ import { CharacterSelection } from "./components/CharacterSelection";
 import backgroundImage from "./assets/img/board-background.png";
 import { useEssenceStore } from "./store/useEssenceStore";
 import { useBattleStore } from "./store/useBattleStore";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { DndContext } from "@dnd-kit/core";
 import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import type { DeckId } from "./mocks/cards";
 
@@ -110,7 +110,6 @@ function App() {
     if (!over) return;
 
     const cardId = active.id as string;
-    const targetSlot = over.id as string;
 
     // Check if the card is in the player's hand
     const cardInHand = playerHand.find((card) => card.id === cardId);

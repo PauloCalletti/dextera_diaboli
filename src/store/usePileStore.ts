@@ -1,10 +1,8 @@
 import { create } from "zustand";
-import { getDeck, baseCards } from "../mocks/cards";
+import { getDeck } from "../mocks/cards";
 import type { DeckId } from "../mocks/cards";
 import { useArenaStore } from "./useArenaStore";
 import { useEssenceStore } from "./useEssenceStore";
-
-type CardWithDrawnState = (typeof baseCards)[0] & { isNew?: boolean };
 
 interface PileState {
   pileCards: any[];
