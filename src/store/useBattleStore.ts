@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { useArenaStore } from "./useArenaStore";
 import { useLifeStore } from "./useLifeStore";
+import { useAIStore } from "./useAIStore";
+import { useTurnStore } from "./useTurnStore";
 
 interface BattleState {
   attackingCards: string[];
   blockingPairs: { attackerId: string; blockerId: string }[];
-  combatPhase: 'none' | 'declare_attackers' | 'declare_blockers' | 'damage';
+  combatPhase: "none" | "declare_attackers" | "declare_blockers" | "damage";
   isPlayerTurn: boolean;
   canAttack: boolean;
   declareAttacker: (cardId: string) => void;
@@ -19,7 +21,7 @@ interface BattleState {
 export const useBattleStore = create<BattleState>((set, get) => ({
   attackingCards: [],
   blockingPairs: [],
-  combatPhase: 'none',
+  combatPhase: "none",
   isPlayerTurn: true,
   canAttack: true,
 
@@ -30,16 +32,16 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     if (lifeStore.isGameOver()) return;
 
     set((state) => {
-      if (state.combatPhase !== 'declare_attackers') return state;
+      if (state.combatPhase !== "declare_attackers") return state;
 
       const isAlreadyAttacking = state.attackingCards.includes(cardId);
       const newAttackingCards = isAlreadyAttacking
-        ? state.attackingCards.filter(id => id !== cardId)
+        ? state.attackingCards.filter((id) => id !== cardId)
         : [...state.attackingCards, cardId];
 
       return {
         ...state,
-        attackingCards: newAttackingCards
+        attackingCards: newAttackingCards,
       };
     });
   },
@@ -49,14 +51,16 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     if (lifeStore.isGameOver()) return;
 
     set((state) => {
-      if (state.combatPhase !== 'declare_blockers') return state;
+      if (state.combatPhase !== "declare_blockers") return state;
 
       // Remove any existing block by this blocker
-      const filteredPairs = state.blockingPairs.filter(pair => pair.blockerId !== blockerId);
-      
+      const filteredPairs = state.blockingPairs.filter(
+        (pair) => pair.blockerId !== blockerId
+      );
+
       // Add the new blocking pair if it's not a deselection
       const isDeselecting = state.blockingPairs.some(
-        pair => pair.attackerId === attackerId && pair.blockerId === blockerId
+        (pair) => pair.attackerId === attackerId && pair.blockerId === blockerId
       );
 
       if (!isDeselecting) {
@@ -65,7 +69,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
       return {
         ...state,
-        blockingPairs: filteredPairs
+        blockingPairs: filteredPairs,
       };
     });
   },
@@ -74,50 +78,69 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     const state = get();
     const arenaStore = useArenaStore.getState();
     const lifeStore = useLifeStore.getState();
-    
+
     if (lifeStore.isGameOver()) return;
 
     // Process each attacking card
-    state.attackingCards.forEach(attackerId => {
-      const blockingPair = state.blockingPairs.find(pair => pair.attackerId === attackerId);
-      const attackingCard = [...arenaStore.playerArenaCards, ...arenaStore.enemyArenaCards]
-        .find(card => card.id === attackerId);
+    state.attackingCards.forEach((attackerId) => {
+      const attackingCard = [
+        ...arenaStore.playerArenaCards,
+        ...arenaStore.enemyArenaCards,
+      ].find((card) => card.id === attackerId);
 
       if (!attackingCard) return;
 
-      if (blockingPair) {
-        // Handle blocked attack
-        const blockingCard = [...arenaStore.playerArenaCards, ...arenaStore.enemyArenaCards]
-          .find(card => card.id === blockingPair.blockerId);
+      // Find the defending card in the same slot
+      const attackerIndex = state.isPlayerTurn
+        ? arenaStore.playerArenaCards.findIndex(
+            (card) => card.id === attackerId
+          )
+        : arenaStore.enemyArenaCards.findIndex(
+            (card) => card.id === attackerId
+          );
 
-        if (!blockingCard) return;
+      if (attackerIndex === -1) return;
 
-        // Calculate combat damage
+      const defendingCard = state.isPlayerTurn
+        ? arenaStore.enemyArenaCards[attackerIndex]
+        : arenaStore.playerArenaCards[attackerIndex];
+
+      if (defendingCard) {
+        // Handle combat between cards
         const attackerDamage = attackingCard.attack;
-        const blockerDamage = blockingCard.attack;
+        const defenderDamage = defendingCard.attack;
+        const defenderCurrentLife =
+          defendingCard.currentLife ?? defendingCard.life;
+        const attackerCurrentLife =
+          attackingCard.currentLife ?? attackingCard.life;
 
-        // Deal damage to blocker
-        const blockerCurrentLife = blockingCard.currentLife !== undefined ? blockingCard.currentLife : blockingCard.life;
-        const newBlockerLife = blockerCurrentLife - attackerDamage;
+        // Deal damage to defender
+        if (attackerDamage >= defenderCurrentLife) {
+          // Defender is destroyed
+          arenaStore.removeCard(defendingCard.id, !state.isPlayerTurn);
+        } else {
+          // Defender survives but takes damage
+          arenaStore.updateCardLife(
+            defendingCard.id,
+            defenderCurrentLife - attackerDamage,
+            !state.isPlayerTurn
+          );
+        }
 
         // Deal damage to attacker
-        const attackerCurrentLife = attackingCard.currentLife !== undefined ? attackingCard.currentLife : attackingCard.life;
-        const newAttackerLife = attackerCurrentLife - blockerDamage;
-
-        // Update or remove cards based on damage
-        if (newBlockerLife <= 0) {
-          arenaStore.removeCard(blockingPair.blockerId, !state.isPlayerTurn);
-        } else {
-          arenaStore.updateCardLife(blockingPair.blockerId, newBlockerLife, !state.isPlayerTurn);
-        }
-
-        if (newAttackerLife <= 0) {
+        if (defenderDamage >= attackerCurrentLife) {
+          // Attacker is destroyed
           arenaStore.removeCard(attackerId, state.isPlayerTurn);
         } else {
-          arenaStore.updateCardLife(attackerId, newAttackerLife, state.isPlayerTurn);
+          // Attacker survives but takes damage
+          arenaStore.updateCardLife(
+            attackerId,
+            attackerCurrentLife - defenderDamage,
+            state.isPlayerTurn
+          );
         }
       } else {
-        // Handle unblocked attack - deal damage to opponent
+        // No defending card, damage goes to player
         if (state.isPlayerTurn) {
           lifeStore.damageEnemy(attackingCard.attack);
         } else {
@@ -130,8 +153,8 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     set({
       attackingCards: [],
       blockingPairs: [],
-      combatPhase: 'none',
-      canAttack: false
+      combatPhase: "none",
+      canAttack: false,
     });
   },
 
@@ -139,34 +162,33 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     const lifeStore = useLifeStore.getState();
     if (lifeStore.isGameOver()) return;
 
-    set({ 
+    set({
       isPlayerTurn: false,
       attackingCards: [],
       blockingPairs: [],
-      combatPhase: 'none',
-      canAttack: false
+      combatPhase: "none",
+      canAttack: false,
     });
 
-    // TODO: Implement enemy turn logic
-    setTimeout(() => {
-      set({ 
-        isPlayerTurn: true,
-        canAttack: true,
-        combatPhase: 'none'
-      });
-    }, 2000);
+    // Trigger AI decision making
+    const aiStore = useAIStore.getState();
+    aiStore.makeDecision();
   },
 
   startTurn: () => {
     const lifeStore = useLifeStore.getState();
     if (lifeStore.isGameOver()) return;
 
-    set({ 
+    set({
       isPlayerTurn: true,
       canAttack: true,
-      combatPhase: 'none',
+      combatPhase: "none",
       attackingCards: [],
-      blockingPairs: []
+      blockingPairs: [],
     });
+
+    // Trigger turn store to handle card drawing
+    const turnStore = useTurnStore.getState();
+    turnStore.setPlayerTurn(true);
   },
-})); 
+}));

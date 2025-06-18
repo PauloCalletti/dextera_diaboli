@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import { useLifeStore } from "../store/useLifeStore"
+import { useLifeStore } from "../store/useLifeStore";
+import { motion } from "framer-motion";
 
 interface DiabolicalLifeCounterProps {
   isEnemy?: boolean;
@@ -13,50 +14,60 @@ export default function DiabolicalLifeCounter({
   const life = isEnemy ? enemyLife : playerLife;
 
   return (
-    <div 
-      className={`fixed ${isEnemy ? 'top-0' : 'bottom-0'} left-1/2 -translate-x-1/2 ${isEnemy ? 'translate-y-[20px]' : 'translate-y-[-20px]'} flex items-center justify-center`}
+    <div
+      className={`fixed ${isEnemy ? "top-44" : "bottom-44"} left-[50px] ${
+        isEnemy ? "translate-y-[90px]" : "translate-y-[-90px]"
+      } flex items-center justify-center`}
     >
-      {/* Simple Circle */}
       <div className="relative w-32 h-32">
-        {/* Background Circle */}
-        <div className="absolute inset-0 rounded-full border-4 border-red-600 bg-red-950" />
+        {/* Hell Circle Background */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-900 via-red-800 to-black border-4 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]" />
 
-        {/* Pentagram extending beyond border */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <svg
-            width="140"
-            height="140"
-            viewBox="0 0 100 100"
-            className="stroke-red-400 absolute"
-            style={{
-              filter: "drop-shadow(0 0 10px currentColor)",
-            }}
-          >
-            <path
-              d="M50 90 L38.2 61.8 L10 61.8 L31.9 45.1 L20.6 17.1 L50 33.8 L79.4 17.1 L68.1 45.1 L90 61.8 L61.8 61.8 Z"
-              fill="none"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
+        {/* Fire Animation Layer */}
+        <motion.div
+          className="absolute inset-0 rounded-full opacity-50"
+          animate={{
+            background: [
+              "radial-gradient(circle, rgba(255,0,0,0.3) 0%, rgba(0,0,0,0) 70%)",
+              "radial-gradient(circle, rgba(255,69,0,0.3) 0%, rgba(0,0,0,0) 70%)",
+              "radial-gradient(circle, rgba(255,0,0,0.3) 0%, rgba(0,0,0,0) 70%)",
+            ],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
 
-        {/* Life Number */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className={`text-6xl font-bold select-none ${
-              life <= 5 ? 'text-red-500 animate-pulse' : 'text-red-200'
-            }`}
-            style={{
-              fontFamily: "serif",
-              zIndex: 10,
-              textShadow: "0 0 10px rgba(220, 38, 38, 0.5)",
-            }}
-          >
-            {life}
-          </span>
+        {/* Life Number with Motion */}
+        <motion.span
+          key={life}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className={`absolute inset-0 flex items-center justify-center text-6xl font-bold select-none ${
+            life <= 5 ? "text-red-500 animate-pulse" : "text-red-200"
+          }`}
+          style={{
+            fontFamily: "'MedievalSharp', cursive",
+            zIndex: 10,
+            textShadow:
+              "0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(255, 0, 0, 0.5)",
+          }}
+        >
+          {life}
+        </motion.span>
+
+        {/* Demonic Symbols */}
+        <div className="absolute inset-0 rounded-full overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full h-full border-2 border-red-600 rounded-full opacity-30" />
+            <div className="w-[90%] h-[90%] border-2 border-red-600 rounded-full opacity-20" />
+            <div className="w-[80%] h-[80%] border-2 border-red-600 rounded-full opacity-10" />
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
