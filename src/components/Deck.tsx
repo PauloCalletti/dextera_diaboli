@@ -1,6 +1,7 @@
 import { Card } from "./Card";
 import { useMemo, useState } from "react";
 import { FlipButton } from "./FlipButton";
+import { useTurnStore } from "../store/useTurnStore";
 
 interface DeckProps {
   cards: Array<{
@@ -18,13 +19,14 @@ interface DeckProps {
 export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [flipAllCards, setFlipAllCards] = useState(false);
+  const { isPlayerTurn, currentPhase } = useTurnStore();
 
   // Calculate card scale based on number of cards
   const cardScale = useMemo(() => {
     const cardHeight = 384; // h-96 = 384px
     const containerHeight = 150;
-    // Double the scale since we're only showing 50% by default
-    return (containerHeight * 2) / cardHeight;
+    // Adjust scale to be smaller in production
+    return Math.min((containerHeight * 2) / cardHeight, 0.65);
   }, []);
 
   // Calculate the spacing between cards based on available width
@@ -49,6 +51,9 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
   const handleFlipAllCards = () => {
     setFlipAllCards(!flipAllCards);
   };
+
+  // Determine if cards should be draggable
+  const isDraggable = verticalPosition === "bottom" && isPlayerTurn && currentPhase === "play";
 
   return (
     <div
@@ -109,7 +114,7 @@ export const Deck = ({ cards, verticalPosition = "bottom" }: DeckProps) => {
                     cost={card.cost}
                     isNew={card.isNew}
                     isEnemy={verticalPosition === "top"}
-                    isDraggable={verticalPosition === "bottom"}
+                    isDraggable={isDraggable}
                     flipped={
                       verticalPosition === "top"
                         ? false

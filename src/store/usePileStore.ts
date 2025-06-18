@@ -1,9 +1,8 @@
 import { create } from "zustand";
-import { mockCards } from "../mocks/cards";
+import { getDeck } from "../mocks/cards";
+import type { DeckId } from "../mocks/cards";
 import { useArenaStore } from "./useArenaStore";
 import { useEssenceStore } from "./useEssenceStore";
-
-type CardWithDrawnState = (typeof mockCards)[0] & { isNew?: boolean };
 
 interface PileState {
   pileCards: any[];
@@ -13,8 +12,9 @@ interface PileState {
   drawCard: () => void;
   drawEnemyCard: () => void;
   playCardFromHand: (cardId: string) => void;
+  removeCardFromHand: (cardId: string) => void;
   removeEnemyCard: (cardId: string) => void;
-  initializePiles: () => void;
+  initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => void;
 }
 
 export const usePileStore = create<PileState>((set, get) => ({
@@ -23,24 +23,18 @@ export const usePileStore = create<PileState>((set, get) => ({
   playerHand: [],
   enemyHand: [],
 
-  initializePiles: () => {
-    // Shuffle the mock cards
-    const shuffledCards = [...mockCards].sort(() => Math.random() - 0.5);
+  initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => {
+    // Get all unique cards for each deck
+    const playerDeck = getDeck(playerDeckId).sort(() => Math.random() - 0.5);
+    const enemyDeck = getDeck(enemyDeckId).sort(() => Math.random() - 0.5);
 
-    // Give each player 5 initial cards
-    const playerInitialHand = shuffledCards
-      .slice(0, 5)
-      .map((card) => ({ ...card, isNew: true }));
-    const enemyInitialHand = shuffledCards
-      .slice(5, 10)
-      .map((card) => ({ ...card, isNew: true }));
+    // Give each player 5 initial cards in hand
+    const playerInitialHand = playerDeck.slice(0, 5).map((card) => ({ ...card, isNew: true }));
+    const enemyInitialHand = enemyDeck.slice(0, 5).map((card) => ({ ...card, isNew: true }));
 
-    // Rest of the cards go to the piles
-    const playerPile = shuffledCards.slice(
-      10,
-      Math.floor(shuffledCards.length / 2)
-    );
-    const enemyPile = shuffledCards.slice(Math.floor(shuffledCards.length / 2));
+    // The rest go to their respective piles
+    const playerPile = playerDeck.slice(5);
+    const enemyPile = enemyDeck.slice(5);
 
     set({
       pileCards: playerPile,
@@ -86,7 +80,7 @@ export const usePileStore = create<PileState>((set, get) => ({
     // Get the essence store and check if we have enough essence
     const essenceStore = useEssenceStore.getState();
     if (!essenceStore.spendEssence(cardToPlay.cost)) {
-      return; // Not enough essence, can't play the card
+      return;
     }
 
     // Get the arena store
@@ -95,13 +89,19 @@ export const usePileStore = create<PileState>((set, get) => ({
     // Check if we can play the card (arena not full)
     if (arenaStore.playerArenaCards.length >= 5) return;
 
-    // Remove card from hand and add to arena
+    // Remove card from hand
     set((state) => ({
       playerHand: state.playerHand.filter((card) => card.id !== cardId),
     }));
 
-    // Add card to arena
-    arenaStore.playCard(cardId);
+    // Add card to arena (default behavior)
+    arenaStore.playCard(cardToPlay);
+  },
+
+  removeCardFromHand: (cardId: string) => {
+    set((state) => ({
+      playerHand: state.playerHand.filter((card) => card.id !== cardId),
+    }));
   },
 
   removeEnemyCard: (cardId: string) => {

@@ -7,6 +7,7 @@ import { useCardStore } from "../store/useCardStore";
 import { useAudioStore } from "../store/useAudioStore";
 import { usePileStore } from "../store/usePileStore";
 import { useBattleStore } from "../store/useBattleStore";
+import { useArenaStore } from "../store/useArenaStore";
 
 interface CardProps {
   frontCardImage: string;
@@ -159,7 +160,7 @@ export const Card = ({
   };
 
   const handleClick = () => {
-    if (!isInArena) {
+    if (!isInArena && !isEnemy) {
       playCardFromHand(cardId);
       return;
     }
@@ -171,14 +172,35 @@ export const Card = ({
         declareAttacker(cardId);
         playSelectSound();
         setShowSparkle(true);
-      } else if (combatPhase === "declare_blockers" && isEnemy) {
-        const attackingCard = attackingCards.find((id) => {
-          return !blockingPairs.some((pair) => pair.blockerId === cardId);
-        });
-        if (attackingCard) {
-          declareBlocker(attackingCard, cardId);
-          playSelectSound();
-          setShowSparkle(true);
+      } else if (combatPhase === "declare_blockers") {
+        if (isEnemy) {
+          // Clicking on enemy card to block it
+          // Find a player card that can block this enemy card
+          const arenaStore = useArenaStore.getState();
+          const playerCards = arenaStore.playerArenaCards;
+          
+          // Find a player card that isn't already blocking
+          const availableBlocker = playerCards.find((playerCard) => {
+            return playerCard && !blockingPairs.some((pair) => pair.blockerId === playerCard.id);
+          });
+          
+          if (availableBlocker) {
+            declareBlocker(cardId, availableBlocker.id);
+            playSelectSound();
+            setShowSparkle(true);
+          }
+        } else {
+          // Clicking on player card to assign it as blocker
+          // Find an attacking card that isn't already blocked
+          const unblockedAttacker = attackingCards.find((attackerId) => {
+            return !blockingPairs.some((pair) => pair.attackerId === attackerId);
+          });
+          
+          if (unblockedAttacker) {
+            declareBlocker(unblockedAttacker, cardId);
+            playSelectSound();
+            setShowSparkle(true);
+          }
         }
       }
     }

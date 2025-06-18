@@ -1,4 +1,3 @@
-import { Card } from "./Card";
 import { usePileStore } from "../store/usePileStore";
 import { useState } from "react";
 
@@ -8,7 +7,7 @@ interface PileProps {
 
 export const Pile = ({ isEnemy = false }: PileProps) => {
   const { pileCards, enemyPileCards } = usePileStore();
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [isDrawing] = useState(false);
 
   const cards = isEnemy ? enemyPileCards : pileCards;
 
@@ -22,7 +21,7 @@ export const Pile = ({ isEnemy = false }: PileProps) => {
   return (
     <div
       className={`fixed ${isEnemy ? "top-8" : "bottom-8"} ${
-        isEnemy ? "right-[225px]" : "left-[225px]"
+        isEnemy ? "right-[225px]" : "left-[150px]"
       } z-10`}
     >
       <div

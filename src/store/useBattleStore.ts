@@ -83,68 +83,117 @@ export const useBattleStore = create<BattleState>((set, get) => ({
 
     // Process each attacking card
     state.attackingCards.forEach((attackerId) => {
-      const attackingCard = [
-        ...arenaStore.playerArenaCards,
-        ...arenaStore.enemyArenaCards,
-      ].find((card) => card.id === attackerId);
+      // Find the attacking card in the correct arena
+      let attackingCard = null;
+      if (state.isPlayerTurn) {
+        attackingCard = arenaStore.playerArenaCards.find((card) => card?.id === attackerId);
+      } else {
+        attackingCard = arenaStore.enemyArenaCards.find((card) => card?.id === attackerId);
+      }
 
       if (!attackingCard) return;
 
-      // Find the defending card in the same slot
-      const attackerIndex = state.isPlayerTurn
-        ? arenaStore.playerArenaCards.findIndex(
-            (card) => card.id === attackerId
-          )
-        : arenaStore.enemyArenaCards.findIndex(
-            (card) => card.id === attackerId
-          );
+      // Check if this attacker is being blocked
+      const blockingPair = state.blockingPairs.find(
+        (pair) => pair.attackerId === attackerId
+      );
 
-      if (attackerIndex === -1) return;
+      if (blockingPair) {
+        // Handle blocked combat
+        const blockerCard = [
+          ...arenaStore.playerArenaCards,
+          ...arenaStore.enemyArenaCards,
+        ].find((card) => card?.id === blockingPair.blockerId);
 
-      const defendingCard = state.isPlayerTurn
-        ? arenaStore.enemyArenaCards[attackerIndex]
-        : arenaStore.playerArenaCards[attackerIndex];
+        if (blockerCard) {
+          const attackerDamage = attackingCard.attack;
+          const blockerDamage = blockerCard.attack;
+          const blockerCurrentLife = blockerCard.currentLife ?? blockerCard.life;
+          const attackerCurrentLife = attackingCard.currentLife ?? attackingCard.life;
 
-      if (defendingCard) {
-        // Handle combat between cards
-        const attackerDamage = attackingCard.attack;
-        const defenderDamage = defendingCard.attack;
-        const defenderCurrentLife =
-          defendingCard.currentLife ?? defendingCard.life;
-        const attackerCurrentLife =
-          attackingCard.currentLife ?? attackingCard.life;
+          // Deal damage to blocker
+          if (attackerDamage >= blockerCurrentLife) {
+            // Blocker is destroyed
+            arenaStore.removeCard(blockerCard.id, !state.isPlayerTurn);
+          } else {
+            // Blocker survives but takes damage
+            arenaStore.updateCardLife(
+              blockerCard.id,
+              blockerCurrentLife - attackerDamage,
+              !state.isPlayerTurn
+            );
+          }
 
-        // Deal damage to defender
-        if (attackerDamage >= defenderCurrentLife) {
-          // Defender is destroyed
-          arenaStore.removeCard(defendingCard.id, !state.isPlayerTurn);
-        } else {
-          // Defender survives but takes damage
-          arenaStore.updateCardLife(
-            defendingCard.id,
-            defenderCurrentLife - attackerDamage,
-            !state.isPlayerTurn
-          );
-        }
-
-        // Deal damage to attacker
-        if (defenderDamage >= attackerCurrentLife) {
-          // Attacker is destroyed
-          arenaStore.removeCard(attackerId, state.isPlayerTurn);
-        } else {
-          // Attacker survives but takes damage
-          arenaStore.updateCardLife(
-            attackerId,
-            attackerCurrentLife - defenderDamage,
-            state.isPlayerTurn
-          );
+          // Deal damage to attacker
+          if (blockerDamage >= attackerCurrentLife) {
+            // Attacker is destroyed
+            arenaStore.removeCard(attackerId, state.isPlayerTurn);
+          } else {
+            // Attacker survives but takes damage
+            arenaStore.updateCardLife(
+              attackerId,
+              attackerCurrentLife - blockerDamage,
+              state.isPlayerTurn
+            );
+          }
         }
       } else {
-        // No defending card, damage goes to player
-        if (state.isPlayerTurn) {
-          lifeStore.damageEnemy(attackingCard.attack);
+        // No blocker, check for defending card in same slot
+        const attackerIndex = state.isPlayerTurn
+          ? arenaStore.playerArenaCards.findIndex(
+              (card) => card?.id === attackerId
+            )
+          : arenaStore.enemyArenaCards.findIndex(
+              (card) => card?.id === attackerId
+            );
+
+        if (attackerIndex === -1) return;
+
+        const defendingCard = state.isPlayerTurn
+          ? arenaStore.enemyArenaCards[attackerIndex]
+          : arenaStore.playerArenaCards[attackerIndex];
+
+        if (defendingCard) {
+          // Handle combat between cards in same slot
+          const attackerDamage = attackingCard.attack;
+          const defenderDamage = defendingCard.attack;
+          const defenderCurrentLife =
+            defendingCard.currentLife ?? defendingCard.life;
+          const attackerCurrentLife =
+            attackingCard.currentLife ?? attackingCard.life;
+
+          // Deal damage to defender
+          if (attackerDamage >= defenderCurrentLife) {
+            // Defender is destroyed
+            arenaStore.removeCard(defendingCard.id, !state.isPlayerTurn);
+          } else {
+            // Defender survives but takes damage
+            arenaStore.updateCardLife(
+              defendingCard.id,
+              defenderCurrentLife - attackerDamage,
+              !state.isPlayerTurn
+            );
+          }
+
+          // Deal damage to attacker
+          if (defenderDamage >= attackerCurrentLife) {
+            // Attacker is destroyed
+            arenaStore.removeCard(attackerId, state.isPlayerTurn);
+          } else {
+            // Attacker survives but takes damage
+            arenaStore.updateCardLife(
+              attackerId,
+              attackerCurrentLife - defenderDamage,
+              state.isPlayerTurn
+            );
+          }
         } else {
-          lifeStore.damagePlayer(attackingCard.attack);
+          // No defending card, damage goes to player
+          if (state.isPlayerTurn) {
+            lifeStore.damageEnemy(attackingCard.attack);
+          } else {
+            lifeStore.damagePlayer(attackingCard.attack);
+          }
         }
       }
     });
