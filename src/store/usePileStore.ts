@@ -12,6 +12,7 @@ interface PileState {
   drawCard: () => void;
   drawEnemyCard: () => void;
   playCardFromHand: (cardId: string) => void;
+  removeCardFromHand: (cardId: string) => void;
   removeEnemyCard: (cardId: string) => void;
   initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => void;
 }
@@ -23,7 +24,7 @@ export const usePileStore = create<PileState>((set, get) => ({
   enemyHand: [],
 
   initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => {
-    // Create and shuffle a 20-card deck for each player
+    // Get all unique cards for each deck
     const playerDeck = getDeck(playerDeckId).sort(() => Math.random() - 0.5);
     const enemyDeck = getDeck(enemyDeckId).sort(() => Math.random() - 0.5);
 
@@ -79,7 +80,7 @@ export const usePileStore = create<PileState>((set, get) => ({
     // Get the essence store and check if we have enough essence
     const essenceStore = useEssenceStore.getState();
     if (!essenceStore.spendEssence(cardToPlay.cost)) {
-      return; // Not enough essence, can't play the card
+      return;
     }
 
     // Get the arena store
@@ -88,13 +89,19 @@ export const usePileStore = create<PileState>((set, get) => ({
     // Check if we can play the card (arena not full)
     if (arenaStore.playerArenaCards.length >= 5) return;
 
-    // Remove card from hand and add to arena
+    // Remove card from hand
     set((state) => ({
       playerHand: state.playerHand.filter((card) => card.id !== cardId),
     }));
 
-    // Add card to arena
-    arenaStore.playCard(cardId);
+    // Add card to arena (default behavior)
+    arenaStore.playCard(cardToPlay);
+  },
+
+  removeCardFromHand: (cardId: string) => {
+    set((state) => ({
+      playerHand: state.playerHand.filter((card) => card.id !== cardId),
+    }));
   },
 
   removeEnemyCard: (cardId: string) => {

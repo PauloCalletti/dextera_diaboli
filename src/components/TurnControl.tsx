@@ -5,6 +5,7 @@ import { useBattleStore } from "../store/useBattleStore";
 import { useAudioStore } from "../store/useAudioStore";
 import { useTurnStore } from "../store/useTurnStore";
 import { useEssenceStore } from "../store/useEssenceStore";
+import { useAIStore } from "../store/useAIStore";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const TurnControl = () => {
@@ -12,6 +13,7 @@ export const TurnControl = () => {
   const { playTurnEndSound } = useAudioStore();
   const { currentPhase, setPhase } = useTurnStore();
   const { increaseMaxEssence } = useEssenceStore();
+  const { makeBlockingDecision } = useAIStore();
 
   const phases = [
     { id: "play", icon: Play, color: "bg-[#FF4500]" }, // Fiery Orange
@@ -19,7 +21,7 @@ export const TurnControl = () => {
     { id: "end", icon: SkipForward, color: "bg-[#4B0082]" }, // Deep Purple
   ];
 
-  const handlePass = () => {
+  const handlePass = async () => {
     if (!isPlayerTurn) return;
 
     // Play sound on every phase change
@@ -29,9 +31,22 @@ export const TurnControl = () => {
       setPhase("combat");
       useBattleStore.setState({ combatPhase: "declare_attackers" });
     } else if (currentPhase === "combat") {
-      resolveCombat(); // Resolve combat before moving to end phase
-      setPhase("end");
-      useBattleStore.setState({ combatPhase: "none" });
+      // Check if we're in the attackers phase and need to move to blockers
+      const battleStore = useBattleStore.getState();
+      if (battleStore.combatPhase === "declare_attackers") {
+        // Move to blockers phase
+        useBattleStore.setState({ combatPhase: "declare_blockers" });
+        
+        // If there are attacking cards and it's not the player's turn, let AI block
+        if (battleStore.attackingCards.length > 0 && !battleStore.isPlayerTurn) {
+          await makeBlockingDecision();
+        }
+      } else {
+        // Resolve combat and move to end phase
+        resolveCombat();
+        setPhase("end");
+        useBattleStore.setState({ combatPhase: "none" });
+      }
     } else if (currentPhase === "end") {
       increaseMaxEssence(); // Increase max essence at end of turn
       endTurn(); // This will trigger the AI's turn

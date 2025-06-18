@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { usePileStore } from "../store/usePileStore";
 import { useEssenceStore } from "../store/useEssenceStore";
+import { useTurnStore } from "../store/useTurnStore";
 
 interface ArenaProps {
   playerCards: Array<{
@@ -13,7 +14,7 @@ interface ArenaProps {
     life: number;
     currentLife?: number;
     cost: number;
-  }>;
+  } | null>;
   enemyCards: Array<{
     frontCardImage: string;
     backCardImage: string;
@@ -22,7 +23,7 @@ interface ArenaProps {
     life: number;
     currentLife?: number;
     cost: number;
-  }>;
+  } | null>;
   activeDragId: string | null;
   overSlotId: string | null;
 }
@@ -84,6 +85,10 @@ export const Arena = ({
 
     // Check if the arena is not full
     if (playerCards.length >= 5) return false;
+
+    // Check if it's the player's turn AND we're in the play phase
+    const turnStore = useTurnStore.getState();
+    if (!turnStore.isPlayerTurn || turnStore.currentPhase !== "play") return false;
 
     return true;
   };
@@ -188,13 +193,13 @@ export const Arena = ({
                         style={{ transform: `scale(${cardScale})` }}
                       >
                         <Card
-                          frontCardImage={enemyCards[index].frontCardImage}
-                          backCardImage={enemyCards[index].backCardImage}
-                          cardId={enemyCards[index].id}
-                          attackPower={enemyCards[index].attack}
-                          life={enemyCards[index].life}
-                          currentLife={enemyCards[index].currentLife}
-                          cost={enemyCards[index].cost}
+                          frontCardImage={enemyCards[index]!.frontCardImage}
+                          backCardImage={enemyCards[index]!.backCardImage}
+                          cardId={enemyCards[index]!.id}
+                          attackPower={enemyCards[index]!.attack}
+                          life={enemyCards[index]!.life}
+                          currentLife={enemyCards[index]!.currentLife}
+                          cost={enemyCards[index]!.cost}
                           flipped={true}
                           isInArena={true}
                           isEnemy={true}
@@ -241,13 +246,13 @@ export const Arena = ({
                         style={{ transform: `scale(${cardScale})` }}
                       >
                         <Card
-                          frontCardImage={playerCards[index].frontCardImage}
-                          backCardImage={playerCards[index].backCardImage}
-                          cardId={playerCards[index].id}
-                          attackPower={playerCards[index].attack}
-                          life={playerCards[index].life}
-                          currentLife={playerCards[index].currentLife}
-                          cost={playerCards[index].cost}
+                          frontCardImage={playerCards[index]!.frontCardImage}
+                          backCardImage={playerCards[index]!.backCardImage}
+                          cardId={playerCards[index]!.id}
+                          attackPower={playerCards[index]!.attack}
+                          life={playerCards[index]!.life}
+                          currentLife={playerCards[index]!.currentLife}
+                          cost={playerCards[index]!.cost}
                           flipped={true}
                           isInArena={true}
                           isEnemy={false}
