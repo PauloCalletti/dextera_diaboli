@@ -24,7 +24,7 @@ const baseCards: CardData[] = [
   {
     id: "mago-errrante",
     frontCardImage: "/cards-assets/mago/mago-errrante.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    backCardImage: "/cards-assets/blue-back-card.png",
     attack: 5,
     life: 5,
     cost: 3,
@@ -33,7 +33,7 @@ const baseCards: CardData[] = [
   {
     id: "montanha",
     frontCardImage: "/cards-assets/mago/montanha.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    backCardImage: "/cards-assets/blue-back-card.png",
     attack: 5,
     life: 5,
     cost: 3,
@@ -42,7 +42,7 @@ const baseCards: CardData[] = [
   {
     id: "predador",
     frontCardImage: "/cards-assets/mago/predador.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    backCardImage: "/cards-assets/blue-back-card.png",
     attack: 5,
     life: 5,
     cost: 3,
@@ -52,7 +52,7 @@ const baseCards: CardData[] = [
   {
     id: "meia-noite",
     frontCardImage: "/cards-assets/necromante/meia-noite.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    backCardImage: "/cards-assets/green-back-card.png",
     attack: 12,
     life: 8,
     cost: 8,
@@ -61,7 +61,7 @@ const baseCards: CardData[] = [
   {
     id: "cavaleiro-eterno",
     frontCardImage: "/cards-assets/necromante/cavaleiro-eterno.png",
-    backCardImage: "/cards-assets/red-back-card.png",
+    backCardImage: "/cards-assets/green-back-card.png",
     attack: 5,
     life: 5,
     cost: 3,
