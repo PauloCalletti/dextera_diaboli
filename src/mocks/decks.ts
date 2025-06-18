@@ -1,5 +1,5 @@
-import { mockCards } from "./cards";
+import { baseCards } from "./cards";
 
 export const mockDecks = {
-  lutadores: mockCards.slice(0, 6),
+  lutadores: baseCards.slice(0, 6),
 };

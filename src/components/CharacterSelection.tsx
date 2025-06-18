@@ -26,7 +26,7 @@ export const CharacterSelection = ({ onCharacterSelected }: CharacterSelectionPr
       subtitle: "Tudo tem um preço — até mesmo a salvação.",
       description:
         "Ardiloso, cínico e envolto em charme sujo, o mercador domina a arte da barganha infernal. Traficante de relíquias malditas e contratos duvidosos, ele transforma cada troca em um jogo de poder. Nem santo nem pecador — ele é apenas negócios.",
-      image: "/cards-assets/mercador.png",
+      image: `${import.meta.env.BASE_URL}cards-assets/mercador.png`,
     },
     {
       id: "necromante",
@@ -34,7 +34,7 @@ export const CharacterSelection = ({ onCharacterSelected }: CharacterSelectionPr
       subtitle: "Senhores da morte, filhos da perdição.",
       description:
         "O necromante não teme o fim — ele o manipula. Cada alma coletada é uma moeda de poder, e cada cadáver, um instrumento. Invocam horrores do além e drenam a essência dos vivos para alimentar sua fome por almas. Onde ele pisa, a terra apodrece e a esperança morre.",
-      image: "/cards-assets/necromante.png",
+      image: `${import.meta.env.BASE_URL}cards-assets/necromante.png`,
     },
     {
       id: "mago",
@@ -42,7 +42,7 @@ export const CharacterSelection = ({ onCharacterSelected }: CharacterSelectionPr
       subtitle: "Mestres do arcano, guardiões do impossível.",
       description:
         "Vivem entre tomos esquecidos e bibliotecas ocultas, onde os segredos do universo são lidos e reescritos. O mago domina forças elementais e distorce a realidade com feitiços complexos e poderosos. Cada gesto seu carrega séculos de estudo e precisão letal. Seus olhos brilham como safiras diante do caos que ele próprio conjura.",
-      image: "/cards-assets/mago.png",
+      image: `${import.meta.env.BASE_URL}cards-assets/mago.png`,
     },
   ];
 
