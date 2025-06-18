@@ -1,7 +1,6 @@
 import "./App.css";
 import { Deck } from "./components/Deck";
 import { ExpandedCard } from "./components/ExpandedCard";
-import { VolumeControl } from "./components/VolumeControl";
 import { TurnControl } from "./components/TurnControl";
 import { Pile } from "./components/Pile";
 import { mockCards } from "./mocks/cards";
@@ -17,20 +16,28 @@ import DiabolicalLifeCounter from "./components/LifeCounter";
 import { MainMenu } from "./components/MainMenu";
 import { useLifeStore } from "./store/useLifeStore";
 import { GameOver } from "./components/GameOver";
-import { EnemyHand } from "./components/EnemyHand";
 import { CharacterSelection } from "./components/CharacterSelection";
+import backgroundImage from "./assets/img/board-background.png";
+import { useEssenceStore } from "./store/useEssenceStore";
+import { useBattleStore } from "./store/useBattleStore";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import type { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 
 type GameState = "menu" | "character-selection" | "arena";
 
 function App() {
   const { expandedCard, setExpandedCard } = useCardStore();
   const { musicVolume } = useAudioStore();
-  const { playerHand } = usePileStore();
+  const { playerHand, enemyHand } = usePileStore();
   const { playerArenaCards, enemyArenaCards } = useArenaStore();
   const { resetLife, isGameOver } = useLifeStore();
   const themeAudioRef = useRef<HTMLAudioElement | null>(null);
   const [gameState, setGameState] = useState<GameState>("menu");
-  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
+    null
+  );
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [overSlotId, setOverSlotId] = useState<string | null>(null);
 
   const filteredExpandedCard = mockCards.find(
     (card) => card.id === expandedCard
@@ -45,7 +52,7 @@ function App() {
     setGameState("arena");
     resetLife(); // Reset life points when starting a new game
     usePileStore.getState().initializePiles(); // Initialize both player and enemy piles
-    
+
     // Start theme when entering arena
     if (themeAudioRef.current) {
       themeAudioRef.current.play().catch((error) => {
@@ -58,6 +65,60 @@ function App() {
     resetLife();
     setGameState("menu");
     setSelectedCharacter(null);
+    useCardStore.getState().setExpandedCard(null);
+    usePileStore.getState().initializePiles();
+    useArenaStore.getState().resetArena();
+    useEssenceStore.getState().resetEssence();
+    useBattleStore.getState().setState({
+      attackingCards: [],
+      blockingPairs: [],
+      combatPhase: "none",
+      isPlayerTurn: true,
+      canAttack: true,
+    });
+  };
+
+  const handleDragStart = (event: any) => {
+    setActiveDragId(event.active.id);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (over) {
+      setOverSlotId(over.id as string);
+    } else {
+      setOverSlotId(null);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveDragId(null);
+    setOverSlotId(null);
+
+    if (!over) return;
+
+    const cardId = active.id as string;
+    const targetSlot = over.id as string;
+
+    // Check if the card is in the player's hand
+    const cardInHand = playerHand.find((card) => card.id === cardId);
+    if (!cardInHand) return;
+
+    // Get the essence store and check if we have enough essence
+    const essenceStore = useEssenceStore.getState();
+    if (!essenceStore.spendEssence(cardInHand.cost)) {
+      return; // Not enough essence, can't play the card
+    }
+
+    // Get the arena store
+    const arenaStore = useArenaStore.getState();
+
+    // Check if we can play the card (arena not full)
+    if (arenaStore.playerArenaCards.length >= 5) return;
+
+    // Play the card to the specified slot
+    arenaStore.playCard(cardId);
   };
 
   useEffect(() => {
@@ -88,33 +149,70 @@ function App() {
   }
 
   return (
-    <div>
-      <VolumeControl />
-      <TurnControl />
-      <Essence />
-      <Pile isEnemy={false} />
-      <Pile isEnemy={true} />
-      <Deck cards={playerHand} verticalPosition="bottom" />
-      <EnemyHand />
-      <DiabolicalLifeCounter isEnemy={false} />
-      <DiabolicalLifeCounter isEnemy={true} />
-
-      {expandedCard && (
-        <ExpandedCard
-          frontCardImage={filteredExpandedCard?.frontCardImage}
-          attack={filteredExpandedCard?.attack ?? 0}
-          life={filteredExpandedCard?.life ?? 0}
-          cost={filteredExpandedCard?.cost ?? 0}
-          handleCloseExpanded={() => {
-            setExpandedCard(null);
+    <DndContext
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <div>
+        <div
+          style={{
+            position: "absolute",
+            background: `url(${backgroundImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            top: 0,
+            right: 0,
+            left: 0,
+            bottom: 0,
+            zIndex: 0,
+            opacity: 0.8,
           }}
+        ></div>
+        <div
+          style={{
+            position: "absolute",
+            background: `black`,
+            top: 0,
+            right: 0,
+            left: 0,
+            bottom: 0,
+            zIndex: 0,
+            opacity: 0.4,
+          }}
+        ></div>
+        {/* <VolumeControl /> */}
+        <Essence />
+        <Pile isEnemy={false} />
+        <Pile isEnemy={true} />
+        <Deck cards={playerHand} verticalPosition="bottom" />
+        <Deck cards={enemyHand} verticalPosition="top" />
+        <TurnControl />
+        <DiabolicalLifeCounter isEnemy={false} />
+        <DiabolicalLifeCounter isEnemy={true} />
+
+        {expandedCard && (
+          <ExpandedCard
+            frontCardImage={filteredExpandedCard?.frontCardImage}
+            attack={filteredExpandedCard?.attack ?? 0}
+            life={filteredExpandedCard?.life ?? 0}
+            cost={filteredExpandedCard?.cost ?? 0}
+            handleCloseExpanded={() => {
+              setExpandedCard(null);
+            }}
+          />
+        )}
+
+        <Arena
+          playerCards={playerArenaCards}
+          enemyCards={enemyArenaCards}
+          activeDragId={activeDragId}
+          overSlotId={overSlotId}
         />
-      )}
 
-      <Arena playerCards={playerArenaCards} enemyCards={enemyArenaCards} />
-
-      {isGameOver() && <GameOver onRestart={handleRestart} />}
-    </div>
+        {isGameOver() && <GameOver onRestart={handleRestart} />}
+      </div>
+    </DndContext>
   );
 }
 

@@ -39,7 +39,8 @@ export const EnemyHand = () => {
         <div className="flex justify-end">
           <div className="relative flex items-center">
             {enemyHand.map((card, cardIndex) => {
-              const leftPosition = cardIndex * (256 * cardScale - (256 * cardScale - cardSpacing));
+              const leftPosition =
+                cardIndex * (256 * cardScale - (256 * cardScale - cardSpacing));
 
               return (
                 <div
@@ -77,4 +78,4 @@ export const EnemyHand = () => {
       `}</style>
     </div>
   );
-}; 
+};

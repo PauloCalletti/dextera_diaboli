@@ -13,6 +13,7 @@ interface PileState {
   drawCard: () => void;
   drawEnemyCard: () => void;
   playCardFromHand: (cardId: string) => void;
+  removeEnemyCard: (cardId: string) => void;
   initializePiles: () => void;
 }
 
@@ -25,20 +26,27 @@ export const usePileStore = create<PileState>((set, get) => ({
   initializePiles: () => {
     // Shuffle the mock cards
     const shuffledCards = [...mockCards].sort(() => Math.random() - 0.5);
-    
+
     // Give each player 5 initial cards
-    const playerInitialHand = shuffledCards.slice(0, 5).map(card => ({ ...card, isNew: true }));
-    const enemyInitialHand = shuffledCards.slice(5, 10).map(card => ({ ...card, isNew: true }));
-    
+    const playerInitialHand = shuffledCards
+      .slice(0, 5)
+      .map((card) => ({ ...card, isNew: true }));
+    const enemyInitialHand = shuffledCards
+      .slice(5, 10)
+      .map((card) => ({ ...card, isNew: true }));
+
     // Rest of the cards go to the piles
-    const playerPile = shuffledCards.slice(10, Math.floor(shuffledCards.length / 2));
+    const playerPile = shuffledCards.slice(
+      10,
+      Math.floor(shuffledCards.length / 2)
+    );
     const enemyPile = shuffledCards.slice(Math.floor(shuffledCards.length / 2));
 
     set({
       pileCards: playerPile,
       enemyPileCards: enemyPile,
       playerHand: playerInitialHand,
-      enemyHand: enemyInitialHand
+      enemyHand: enemyInitialHand,
     });
   },
 
@@ -68,9 +76,7 @@ export const usePileStore = create<PileState>((set, get) => ({
 
   playCardFromHand: (cardId: string) => {
     const state = get();
-    const cardIndex = state.playerHand.findIndex(
-      (card) => card.id === cardId
-    );
+    const cardIndex = state.playerHand.findIndex((card) => card.id === cardId);
 
     if (cardIndex === -1) return;
 
@@ -96,5 +102,11 @@ export const usePileStore = create<PileState>((set, get) => ({
 
     // Add card to arena
     arenaStore.playCard(cardId);
+  },
+
+  removeEnemyCard: (cardId: string) => {
+    set((state) => ({
+      enemyHand: state.enemyHand.filter((card) => card.id !== cardId),
+    }));
   },
 }));
