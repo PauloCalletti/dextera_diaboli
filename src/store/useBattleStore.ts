@@ -3,6 +3,7 @@ import { useArenaStore } from "./useArenaStore";
 import { useLifeStore } from "./useLifeStore";
 import { useAIStore } from "./useAIStore";
 import { useTurnStore } from "./useTurnStore";
+import { useAudioStore } from "./useAudioStore";
 
 interface BattleState {
   attackingCards: string[];
@@ -78,6 +79,7 @@ export const useBattleStore = create<BattleState>((set, get) => ({
     const state = get();
     const arenaStore = useArenaStore.getState();
     const lifeStore = useLifeStore.getState();
+    const audioStore = useAudioStore.getState();
 
     if (lifeStore.isGameOver()) return;
 
@@ -190,8 +192,10 @@ export const useBattleStore = create<BattleState>((set, get) => ({
         } else {
           // No defending card, damage goes to player
           if (state.isPlayerTurn) {
+            audioStore.playDemageSound();
             lifeStore.damageEnemy(attackingCard.attack);
           } else {
+            audioStore.playDemageSound();
             lifeStore.damagePlayer(attackingCard.attack);
           }
         }

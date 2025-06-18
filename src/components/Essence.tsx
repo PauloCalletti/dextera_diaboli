@@ -49,7 +49,7 @@ export const Essence = () => {
               textShadow: "0 0 10px rgba(220, 38, 38, 0.8)",
             }}
           >
-            Essence:
+            Essência:
           </span>
           <span
             className="text-red-100 font-bold text-lg"
