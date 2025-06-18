@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { usePileStore } from "../store/usePileStore";
 import { useEssenceStore } from "../store/useEssenceStore";
+import { useTurnStore } from "../store/useTurnStore";
 
 interface ArenaProps {
   playerCards: Array<{
@@ -84,6 +85,10 @@ export const Arena = ({
 
     // Check if the arena is not full
     if (playerCards.length >= 5) return false;
+
+    // Check if it's the player's turn
+    const turnStore = useTurnStore.getState();
+    if (!turnStore.isPlayerTurn) return false;
 
     return true;
   };

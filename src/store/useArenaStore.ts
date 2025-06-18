@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { baseCards } from "../mocks/cards";
+import { usePileStore } from "./usePileStore";
 
 interface CardWithDrawnState {
   id: string;
@@ -33,7 +34,9 @@ export const useArenaStore = create<ArenaState>((set) => ({
         return state;
       }
 
-      const cardToPlay = baseCards.find((card) => card.id === cardId);
+      // Get the card from the pile store
+      const pileStore = usePileStore.getState();
+      const cardToPlay = pileStore.playerHand.find((card) => card.id === cardId);
       if (!cardToPlay) return state;
 
       return {

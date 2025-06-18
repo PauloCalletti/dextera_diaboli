@@ -23,7 +23,7 @@ export const usePileStore = create<PileState>((set, get) => ({
   enemyHand: [],
 
   initializePiles: (playerDeckId: DeckId, enemyDeckId: DeckId) => {
-    // Create and shuffle a 20-card deck for each player
+    // Get all unique cards for each deck
     const playerDeck = getDeck(playerDeckId).sort(() => Math.random() - 0.5);
     const enemyDeck = getDeck(enemyDeckId).sort(() => Math.random() - 0.5);
 
@@ -79,7 +79,7 @@ export const usePileStore = create<PileState>((set, get) => ({
     // Get the essence store and check if we have enough essence
     const essenceStore = useEssenceStore.getState();
     if (!essenceStore.spendEssence(cardToPlay.cost)) {
-      return; // Not enough essence, can't play the card
+      return;
     }
 
     // Get the arena store

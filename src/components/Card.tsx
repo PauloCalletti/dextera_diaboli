@@ -159,7 +159,7 @@ export const Card = ({
   };
 
   const handleClick = () => {
-    if (!isInArena) {
+    if (!isInArena && !isEnemy) {
       playCardFromHand(cardId);
       return;
     }
